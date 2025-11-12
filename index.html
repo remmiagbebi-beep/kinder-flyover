@@ -35,7 +35,7 @@
       </svg>
     </button>
 
-    <!-- Camera button -->
+    <!-- Camera mode -->
     <button id="btnCam" class="btn" aria-label="Camera mode">
       <svg id="iconCamCine" viewBox="0 0 24 24" class="active">
         <rect x="3" y="7" width="11" height="10" rx="2"></rect>
@@ -50,27 +50,53 @@
     <!-- Speed button -->
     <div class="speed-wrap" id="speedWrap">
       <button id="btnSpeed" class="btn" aria-label="Speed">
-        <svg class="speed-icon" viewBox="0 0 24 24" style="display:block">
-          <circle cx="17.5" cy="5.5" r="2.2" fill="#fff"/>
-          <path d="M12.2 9.2l2.4-1.8c.7-.5 1.6-.4 2.2.2l1.6 1.6-1.4 1.4-1.3-1.3-1.9 1.4 1.7 2.9 3.1.9-.5 1.9-3.9-1.1c-.5-.1-.9-.4-1.1-.8l-1.6-2.7-1.1 2.3c-.2.4-.5.7-1 .8L7 15.7l1.2 3.2H6.1L4.4 13l3.8-1.2 1.5-3.2 2.5.6z" fill="#fff"/>
-        </svg>
+        <svg id="iconSpeed" class="active" viewBox="0 0 24 24"></svg>
       </button>
       <div class="speed-panel" id="speedPanel">
-        <svg class="speed-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="17.5" cy="5.5" r="2.2" fill="#fff"/>
-          <path d="M12.2 9.2l2.4-1.8c.7-.5 1.6-.4 2.2.2l1.6 1.6-1.4 1.4-1.3-1.3-1.9 1.4 1.7 2.9 3.1.9-.5 1.9-3.9-1.1c-.5-.1-.9-.4-1.1-.8l-1.6-2.7-1.1 2.3c-.2.4-.5.7-1 .8L7 15.7l1.2 3.2H6.1L4.4 13l3.8-1.2 1.5-3.2 2.5.6z" fill="#fff"/>
-        </svg>
+        <svg id="iconSpeedPanel" class="speed-icon" viewBox="0 0 24 24"></svg>
         <input id="speed" class="speed-slider" type="range" min="0.1" max="5" step="0.05" value="0.45"/>
       </div>
     </div>
   </div>
 
-  <!-- JS (same logic as before) -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
   <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
   <script>
-  // (your same JS logic for map and controls here — unchanged)
+  mapboxgl.accessToken = "pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
+  const GPX_URL = "https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
+  const HAND_ICON = "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg?v=" + Date.now();
+  const SPEED_ICON = "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v=" + Date.now();
+  const START_ZOOM = 15.7;
+
+  // Load hand.svg
+  (async () => {
+    try {
+      const res = await fetch(HAND_ICON, { mode: "cors", cache: "no-store" });
+      const svg = await res.text();
+      const el = new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("svg");
+      el.id = "iconCamFree";
+      el.style.width = "24px"; el.style.height = "24px"; el.style.transform = "translate(2px,0)";
+      Array.from(el.querySelectorAll("*")).forEach(n=>{ if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff"); });
+      document.getElementById("iconCamFree").replaceWith(el);
+    } catch {}
+  })();
+
+  // Load fast-forward.svg for both button + panel
+  (async () => {
+    try {
+      const res = await fetch(SPEED_ICON, { mode: "cors", cache: "no-store" });
+      const svg = await res.text();
+      const el = new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("svg");
+      el.style.width = "24px"; el.style.height = "24px";
+      Array.from(el.querySelectorAll("*")).forEach(n=>{ if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff"); });
+      const el2 = el.cloneNode(true);
+      document.getElementById("iconSpeed").replaceWith(el);
+      document.getElementById("iconSpeedPanel").replaceWith(el2);
+    } catch {}
+  })();
+
+  // (Map and flyover JS — unchanged from your working version)
   </script>
 </body>
 </html>
