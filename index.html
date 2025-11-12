@@ -13,13 +13,12 @@
 
     .btn{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;cursor:pointer;user-select:none;transition:.15s;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35)}
     .btn:hover{background:linear-gradient(180deg,#3899EC,#297fc8)}
-    .btn svg{fill:#fff;width:24px;height:24px;display:none}
+    .btn svg{fill:#fff;width:18px;height:18px;display:none} /* 75% of original size */
     .btn svg.active{display:block}
 
     .speed-wrap{position:relative;width:50px;height:50px}
     .speed-panel{position:absolute;top:50%;right:60px;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;width:230px;height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:9999px;border:3px solid #fff;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35);transition:opacity .18s,transform .18s}
     .speed-wrap.open .speed-panel{opacity:1;transform:translateY(-50%) scale(1);pointer-events:auto}
-    .speed-icon{width:11px;height:11px;fill:#fff;flex:0 0 auto} /* 50% smaller */
     .speed-slider{flex:1;appearance:none;height:6px;border-radius:999px;outline:none;background:linear-gradient(90deg,#fff,#fff8)}
     .speed-slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #EC2629;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
   </style>
@@ -28,11 +27,13 @@
   <div id="map"></div>
 
   <div class="ui">
+    <!-- Play / Pause -->
     <button id="btnToggle" class="btn" aria-label="Play">
       <svg id="iconPlay" class="active" viewBox="0 0 24 24"><polygon transform="translate(1,0)" points="5,3 19,12 5,21"/></svg>
       <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/></svg>
     </button>
 
+    <!-- Camera mode -->
     <button id="btnCam" class="btn" aria-label="Camera mode">
       <svg id="iconCamCine" viewBox="0 0 24 24" class="active"><rect x="3" y="7" width="11" height="10" rx="2"/><polygon points="16,10 22,7.5 22,16.5 16,14"/></svg>
       <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg" viewBox="4.3333375 6.3333375 43.875 40.375" style="transform:translate(1px,1px)">
@@ -41,12 +42,13 @@
       <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
     </button>
 
+    <!-- Speed -->
     <div class="speed-wrap" id="speedWrap">
       <button id="btnSpeed" class="btn" aria-label="Speed">
-        <svg id="iconSpeed" class="active" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/></svg>
+        <svg id="iconSpeed" class="active" viewBox="0 0 24 24"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/></svg>
       </button>
       <div class="speed-panel" id="speedPanel">
-        <svg id="iconSpeedPanel" class="speed-icon" viewBox="0 0 24 24"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/></svg>
+        <!-- Removed speed icon here -->
         <input id="speed" class="speed-slider" type="range" min="0.1" max="5" step="0.05" value="0.35"/>
       </div>
     </div>
@@ -65,7 +67,7 @@
 
   function forceWhite(svg){Array.from(svg.querySelectorAll("*")).forEach(n=>{if(n.getAttribute("fill")!=="none")n.setAttribute("fill","#fff");if(n.hasAttribute("stroke"))n.setAttribute("stroke","#fff");});}
 
-  (async()=>{try{const r=await fetch(SPEED_ICON,{mode:"cors",cache:"no-store"});const t=await r.text();const d=new DOMParser().parseFromString(t,"image/svg+xml");const s=d.querySelector("svg");if(s){forceWhite(s);s.setAttribute("width","12px");s.setAttribute("height","12px");const s1=s.cloneNode(true),s2=s.cloneNode(true);s1.id="iconSpeed";s1.classList.add("active");s2.id="iconSpeedPanel";s2.classList.add("speed-icon");document.getElementById("iconSpeed").replaceWith(s1);document.getElementById("iconSpeedPanel").replaceWith(s2);}}catch{}})();
+  (async()=>{try{const r=await fetch(SPEED_ICON,{mode:"cors",cache:"no-store"});const t=await r.text();const d=new DOMParser().parseFromString(t,"image/svg+xml");const s=d.querySelector("svg");if(s){forceWhite(s);s.setAttribute("width","18px");s.setAttribute("height","18px");s.id="iconSpeed";s.classList.add("active");document.getElementById("iconSpeed").replaceWith(s);}}catch{}})();
 
   (async()=>{try{const r=await fetch(HAND_ICON,{mode:"cors",cache:"no-store"});const t=await r.text();const s=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");if(s){s.id="iconCamFree";s.style.width="24px";s.style.height="24px";s.style.transform="translate(2px,0)";forceWhite(s);document.getElementById("iconCamFree").replaceWith(s);}}catch{}})();
 
@@ -75,25 +77,28 @@
   async function fetchText(u){try{const r=await fetch(u,{mode:"cors"});if(r.ok)return await r.text();}catch{}try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(u));if(r.ok)return await r.text();}catch{}return"";}
   function parseGpx(t){const x=new DOMParser().parseFromString(t,"application/xml");const gj=toGeoJSON.gpx(x);return gj.features.find(f=>f.geometry&&f.geometry.type==="LineString");}
   async function addArrowImage(){if(map.hasImage("arrow"))return;const s=96,c=document.createElement("canvas");c.width=c.height=s;const ctx=c.getContext("2d");ctx.translate(s/2,s/2);ctx.beginPath();const w=s*0.44,h=s*0.26;ctx.moveTo(+w,0);ctx.lineTo(-w*0.6,-h);ctx.lineTo(-w*0.6,+h);ctx.closePath();ctx.lineJoin="round";ctx.lineCap="round";ctx.lineWidth=3;ctx.strokeStyle="#EC2629";ctx.fillStyle="#ffffff";ctx.stroke();ctx.fill();const bmp=await createImageBitmap(c);map.addImage("arrow",bmp,{pixelRatio:2});}
-  const clamp=(v,l,h)=>Math.max(l,Math.min(h,v));
 
   map.on("load",async()=>{map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1",tileSize:512});map.setTerrain({source:"mapbox-dem",exaggeration:1});map.addLayer({id:"sky",type:"sky",paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}});
     map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});map.addLayer({id:"route-line",type:"line",source:"route",paint:{"line-color":"#EC2629","line-width":4,"line-opacity":0.95}});await addArrowImage();
     map.addLayer({id:"route-arrows",type:"symbol",source:"route",layout:{"symbol-placement":"line","symbol-spacing":110,"icon-image":"arrow","icon-size":0.45,"icon-allow-overlap":true,"icon-ignore-placement":true,"icon-rotation-alignment":"map","icon-keep-upright":false},paint:{"icon-opacity":0.9}});
     map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});map.addLayer({id:"cursor-pt",type:"circle",source:"cursor",paint:{"circle-radius":6,"circle-color":"#ffffff","circle-stroke-width":3,"circle-stroke-color":"#EC2629"}});
-    const text=await fetchText(GPX_URL);const line=parseGpx(text);if(line){const len=turf.length(line,{units:"kilometers"});const pts=[];for(let d=0;d<=len;d+=STEP_KM){pts.push(turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates);}route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};routeLen=len;map.getSource("route").setData(route);map.getSource("cursor").setData(turf.point(route.geometry.coordinates[0]));map.once("idle",()=>{const b=turf.bbox(route);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:80,pitch:75,bearing:-20,duration:0});});}
-    requestAnimationFrame(tick);});
+    const text=await fetchText(GPX_URL);const line=parseGpx(text);if(line){const len=turf.length(line,{units:"kilometers"});const pts=[];for(let d=0;d<=len;d+=0.02){pts.push(turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates);}route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};routeLen=len;map.getSource("route").setData(route);map.getSource("cursor").setData(turf.point(route.geometry.coordinates[0]));map.once("idle",()=>{const b=turf.bbox(route);map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:80,pitch:75,bearing:-20,duration:0});});}
+    requestAnimationFrame(tick);
+  });
 
   const btnToggle=document.getElementById("btnToggle"),playIcon=document.getElementById("iconPlay"),pauseIcon=document.getElementById("iconPause");
   btnToggle.addEventListener("click",()=>{playing=!playing;playIcon.classList.toggle("active",!playing);pauseIcon.classList.toggle("active",playing);});
+
   const btnCam=document.getElementById("btnCam");
   function iconSet(){return{follow:document.getElementById("iconCamCine"),topdown:document.getElementById("iconCamBird"),free:document.getElementById("iconCamFree")}}
   btnCam.addEventListener("click",()=>{camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";const i=iconSet();Object.values(i).forEach(el=>el&&el.classList.remove("active"));if(i[camMode])i[camMode].classList.add("active");if(camMode!=="free")userOverride=false;});
+
   const speedWrap=document.getElementById("speedWrap"),speedInput=document.getElementById("speed");
   document.getElementById("btnSpeed").addEventListener("click",e=>{e.stopPropagation();speedWrap.classList.toggle("open");});
   document.addEventListener("click",()=>speedWrap.classList.remove("open"));
   ["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{map.on(ev,e=>{if((camMode==="follow"||camMode==="topdown")&&e&&e.originalEvent){userOverride=true;}});});
-  function tick(ts){if(!lastTs)lastTs=ts;const dt=(ts-lastTs)/1000;lastTs=ts;if(playing&&route){const sp=parseFloat(speedInput.value||"0.35");progress+=sp*dt*0.28;if(progress>routeLen)progress=0;const pos=turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;const nxt=turf.along(route,Math.min(progress+.01,routeLen),{units:"kilometers"}).geometry.coordinates;map.getSource("cursor").setData(turf.point(pos));if((camMode==="follow"||camMode==="topdown")&&!userOverride){const targetCenter=pos.slice(0,2);const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));const targetPitch=(camMode==="topdown")?0:75;if(camBearing===null)camBearing=targetBearing;const diff=((targetBearing-camBearing+540)%360)-180;camBearing+=Math.max(-MAX_TURN_RATE*dt,Math.min(MAX_TURN_RATE*dt,diff));if(!camCenter)camCenter=targetCenter;camCenter=[camCenter[0]+(targetCenter[0]-camCenter[0])*CENTER_SMOOTH,camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH];map.jumpTo({center:camCenter,bearing:camBearing,pitch:targetPitch,zoom:START_ZOOM});}}requestAnimationFrame(tick);}
+
+  function tick(ts){if(!lastTs)lastTs=ts;const dt=(ts-lastTs)/1000;lastTs=ts;if(playing&&route){const sp=parseFloat(speedInput.value||"0.35");progress+=sp*dt*0.28;if(progress>routeLen)progress=0;const pos=turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;const nxt=turf.along(route,Math.min(progress+.01,routeLen),{units:"kilometers"}).geometry.coordinates;map.getSource("cursor").setData(turf.point(pos));if((camMode==="follow"||camMode==="topdown")&&!userOverride){const targetCenter=pos.slice(0,2);const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));const targetPitch=(camMode==="topdown")?0:75;if(camBearing===null)camBearing=targetBearing;const diff=((targetBearing-camBearing+540)%360)-180;camBearing+=Math.max(-4*dt,Math.min(4*dt,diff));if(!camCenter)camCenter=targetCenter;camCenter=[camCenter[0]+(targetCenter[0]-camCenter[0])*0.06,camCenter[1]+(targetCenter[1]-camCenter[1])*0.06];map.jumpTo({center:camCenter,bearing:camBearing,pitch:targetPitch,zoom:15.7});}}requestAnimationFrame(tick);}
   </script>
 </body>
 </html>
