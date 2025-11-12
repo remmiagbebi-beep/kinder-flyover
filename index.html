@@ -82,7 +82,7 @@
       svgEl.removeAttribute("width"); svgEl.removeAttribute("height");
       if (!svgEl.getAttribute("viewBox")) svgEl.setAttribute("viewBox", "0 0 24 24");
       svgEl.style.width = "24px"; svgEl.style.height = "24px";
-      svgEl.style.transform = "translate(2px,0)";
+      svgEl.style.transform = "translate(1px,0)";
       Array.from(svgEl.querySelectorAll("*")).forEach(n=>{
         if(n.tagName.toLowerCase()==="svg") return;
         const f=n.getAttribute("fill");
@@ -246,3 +246,4 @@
   </script>
 </body>
 </html>
+
