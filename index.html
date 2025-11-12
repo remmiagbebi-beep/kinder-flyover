@@ -6,105 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #000;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    #map {
-      position: absolute;
-      inset: 0;
-    }
-    .ui {
-      position: absolute;
-      top: 50%;
-      right: 20px;
-      transform: translateY(-50%);
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 3px solid #fff;
-      cursor: pointer;
-      user-select: none;
-      transition: 0.15s;
-      background: linear-gradient(180deg, #EC2629, #b51d20);
-      box-shadow: 0 3px 10px rgba(0,0,0,.35);
-    }
-    .btn:hover {
-      background: linear-gradient(180deg, #3899EC, #297fc8);
-    }
-    .btn svg {
-      fill: #fff;
-      width: 24px;
-      height: 24px;
-      display: none;
-    }
-    .btn svg.active {
-      display: block;
-    }
-    .speed-wrap {
-      position: relative;
-      width: 50px;
-      height: 50px;
-    }
-    .speed-panel {
-      position: absolute;
-      top: 50%;
-      right: 60px;
-      transform: translateY(-50%) scale(.98);
-      opacity: 0;
-      pointer-events: none;
-      width: 230px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 14px;
-      border-radius: 9999px;
-      border: 3px solid #fff;
-      background: linear-gradient(180deg, #EC2629, #b51d20);
-      box-shadow: 0 3px 10px rgba(0,0,0,.35);
-      transition: opacity .18s, transform .18s;
-    }
-    .speed-wrap.open .speed-panel {
-      opacity: 1;
-      transform: translateY(-50%) scale(1);
-      pointer-events: auto;
-    }
-    .speed-icon {
-      width: 22px;
-      height: 22px;
-      fill: #fff;
-      flex: 0 0 auto;
-    }
-    .speed-slider {
-      flex: 1;
-      appearance: none;
-      height: 6px;
-      border-radius: 999px;
-      outline: none;
-      background: linear-gradient(90deg, #fff, #fff8);
-    }
-    .speed-slider::-webkit-slider-thumb {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #fff;
-      border: 2px solid #EC2629;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25);
-      cursor: pointer;
-    }
+    html,body{margin:0;height:100%;background:#000;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    #map{position:absolute;inset:0}
+
+    .ui{position:absolute;top:50%;right:20px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:18px}
+
+    .btn{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;cursor:pointer;user-select:none;transition:.15s;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+    .btn:hover{background:linear-gradient(180deg,#3899EC,#297fc8)}
+    .btn svg{fill:#fff;width:24px;height:24px;display:none}
+    .btn svg.active{display:block}
+
+    .speed-wrap{position:relative;width:50px;height:50px}
+    .speed-panel{position:absolute;top:50%;right:60px;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;width:230px;height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:9999px;border:3px solid #fff;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35);transition:opacity .18s,transform .18s}
+    .speed-wrap.open .speed-panel{opacity:1;transform:translateY(-50%) scale(1);pointer-events:auto}
+    .speed-icon{width:22px;height:22px;fill:#fff;flex:0 0 auto}
+    .speed-slider{flex:1;appearance:none;height:6px;border-radius:999px;outline:none;background:linear-gradient(90deg,#fff,#fff8)}
+    .speed-slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #EC2629;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
   </style>
 </head>
 <body>
@@ -113,28 +30,16 @@
   <div class="ui">
     <!-- Play / Pause -->
     <button id="btnToggle" class="btn" aria-label="Play">
-      <svg id="iconPlay" class="active" viewBox="0 0 24 24">
-        <polygon transform="translate(1,0)" points="5,3 19,12 5,21"/>
-      </svg>
-      <svg id="iconPause" viewBox="0 0 24 24">
-        <rect x="6" y="4" width="5" height="16" rx="1.5"/>
-        <rect x="13" y="4" width="5" height="16" rx="1.5"/>
-      </svg>
+      <svg id="iconPlay" class="active" viewBox="0 0 24 24"><polygon transform="translate(1,0)" points="5,3 19,12 5,21"/></svg>
+      <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/></svg>
     </button>
 
-    <!-- Camera mode -->
+    <!-- Camera mode (Cinematic → Top-down → Free) -->
     <button id="btnCam" class="btn" aria-label="Camera mode">
-      <svg id="iconCamCine" viewBox="0 0 24 24" class="active">
-        <rect x="3" y="7" width="11" height="10" rx="2"></rect>
-        <polygon points="16,10 22,7.5 22,16.5 16,14"></polygon>
-      </svg>
-
-      <!-- Bird -->
+      <svg id="iconCamCine" viewBox="0 0 24 24" class="active"><rect x="3" y="7" width="11" height="10" rx="2"/><polygon points="16,10 22,7.5 22,16.5 16,14"/></svg>
       <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg" viewBox="4.3333375 6.3333375 43.875 40.375" style="transform:translate(1px,1px)">
-        <path d="M41.965,20.694c-0.495-2.083-2.273-3.54-4.182-3.54c-1.816,0-3.717,1.149-5.184,2.522c-3.911-5.328-9.661-9.706-13.112-12.527c-0.713,1.656-1.029,3.449-1.029,5.271c0,1.999,0.395,4.832,1.042,6.768L26,19.667H5.121c2.5,5.762,7.472,9.976,13.329,12.333c-3.699,2.583-6.778,4.415-10.271,6.815c2.034,2.034,3.384,2.935,6.606,4.035c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z M38.863,20.814c-0.426,0-0.769-0.345-0.769-0.769c0-0.426,0.343-0.768,0.769-0.768c0.424,0,0.769,0.342,0.769,0.768C39.632,20.469,39.287,20.814,38.863,20.814z" fill="#fff"></path>
+        <path d="M41.965,20.694c-0.495-2.083-2.273-3.54-4.182-3.54c-1.816,0-3.717,1.149-5.184,2.522c-3.911-5.328-9.661-9.706-13.112-12.527c-0.713,1.656-1.029,3.449-1.029,5.271c0,1.999,0.395,4.832,1.042,6.768L26,19.667H5.121c2.5,5.762,7.472,9.976,13.329,12.333c-3.699,2.583-6.778,4.415-10.271,6.815c2.034,2.034,3.384,2.935,6.606,4.035c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z M38.863,20.814c-0.426,0-0.769-0.345-0.769-0.769c0-0.426,0.343-0.768,0.769-0.768c0.424,0,0.769,0.342,0.769,0.768C39.632,20.469,39.287,20.814,38.863,20.814z" fill="#fff"/>
       </svg>
-
-      <!-- Free -->
       <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
     </button>
 
@@ -153,130 +58,206 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
   <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
-
   <script>
+  /* ================= CONFIG ================= */
   mapboxgl.accessToken = "pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
-  const GPX_URL = "https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
+  const GPX_URL   = "https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
   const HAND_ICON = "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg?v=" + Date.now();
-  const SPEED_ICON = "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v=" + Date.now();
-  const START_ZOOM = 15.7;
+  const SPEED_ICON= "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v=" + Date.now();
 
-  async function injectSvg(targetId, url, transform = "", size = 24) {
-    try {
-      const r = await fetch(url, { mode: "cors", cache: "no-store" });
-      const txt = await r.text();
-      const svg = new DOMParser().parseFromString(txt, "image/svg+xml").querySelector("svg");
-      svg.id = targetId;
-      svg.style.width = `${size}px`;
-      svg.style.height = `${size}px`;
-      svg.style.transform = transform;
-      Array.from(svg.querySelectorAll("*")).forEach(n => {
-        if (n.getAttribute("fill") !== "none") n.setAttribute("fill", "#fff");
-        if (n.hasAttribute("stroke")) n.setAttribute("stroke", "#fff");
-      });
-      document.getElementById(targetId).replaceWith(svg);
-    } catch (err) { console.warn("Failed to load icon", url); }
+  const START_ZOOM = 15.7;     // camera zoom when following
+  const ALPHA = 0.08;          // center smoothing
+  const MAX_TURN_RATE = 10;    // deg/sec clamp (prevents jerks)
+
+  /* ================= ICON LOADERS ================= */
+  function forceWhite(svgEl){
+    Array.from(svgEl.querySelectorAll("*")).forEach(n=>{
+      if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff");
+      if(n.hasAttribute("stroke")) n.setAttribute("stroke","#fff");
+    });
   }
 
-  injectSvg("iconCamFree", HAND_ICON, "translate(2px,0)");
-
+  // Hand (free camera), nudged 2px right
   (async () => {
-    try {
-      const r = await fetch(SPEED_ICON, { mode: "cors", cache: "no-store" });
-      const txt = await r.text();
-      const doc = new DOMParser().parseFromString(txt, "image/svg+xml");
-      const svg = doc.querySelector("svg");
-      svg.style.width = "24px";
-      svg.style.height = "24px";
-      Array.from(svg.querySelectorAll("*")).forEach(n => {
-        if (n.getAttribute("fill") !== "none") n.setAttribute("fill", "#fff");
-        if (n.hasAttribute("stroke")) n.setAttribute("stroke", "#fff");
-      });
-      const svgClone = svg.cloneNode(true);
-      document.getElementById("iconSpeed").replaceWith(svg);
-      document.getElementById("iconSpeedPanel").replaceWith(svgClone);
-    } catch (err) {
-      console.error("Failed to load speed icon", err);
+    try{
+      const r=await fetch(HAND_ICON,{mode:"cors",cache:"no-store"}); const t=await r.text();
+      const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+      svg.id="iconCamFree"; svg.style.width="24px"; svg.style.height="24px"; svg.style.transform="translate(2px,0)"; forceWhite(svg);
+      document.getElementById("iconCamFree").replaceWith(svg);
+    }catch{}
+  })();
+
+  // Fast-forward icon for both button + panel (with fallback)
+  (async () => {
+    const fallback = '<svg viewBox="0 0 24 24"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z" fill="#fff"/></svg>';
+    try{
+      const r=await fetch(SPEED_ICON,{mode:"cors",cache:"no-store"}); const t=await r.text();
+      const doc=new DOMParser().parseFromString(t,"image/svg+xml"); let svg=doc.querySelector("svg");
+      if(!svg) throw 0; svg.style.width="24px"; svg.style.height="24px"; forceWhite(svg);
+      const svg2=svg.cloneNode(true);
+      document.getElementById("iconSpeed").replaceWith(svg);       // round button
+      document.getElementById("iconSpeedPanel").replaceWith(svg2); // slider panel
+    }catch{
+      document.getElementById("iconSpeed").outerHTML=fallback;
+      document.getElementById("iconSpeedPanel").outerHTML=fallback.replace("<svg","<svg class='speed-icon'");
     }
   })();
 
+  /* ================= MAP ================= */
   const map = new mapboxgl.Map({
-    container: "map",
-    style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: [-1.815, 53.38],
-    zoom: START_ZOOM,
-    pitch: 65,
-    bearing: 0,
-    terrain: { source: "mapbox-dem", exaggeration: 1.4 },
-    antialias: true
+    container:"map",
+    style:"mapbox://styles/mapbox/satellite-streets-v12",
+    center:[-1.8743,53.3832],
+    zoom:14.8,
+    pitch:75,
+    bearing:-20,
+    antialias:true
   });
 
+  /* ================= STATE ================= */
+  let route=null, routeLen=0, progress=0, playing=false, camMode="follow", userOverride=false;
+  let camCenter=null, camBearing=null, lastTs=0;
+
+  /* ================= HELPERS ================= */
+  async function fetchText(url){
+    try{const r=await fetch(url,{mode:"cors"}); if(r.ok) return await r.text();}catch(e){}
+    try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(url)); if(r.ok) return await r.text();}catch(e){}
+    return "";
+  }
+  function parseGpx(txt){
+    const xml=new DOMParser().parseFromString(txt,"application/xml");
+    const gj=toGeoJSON.gpx(xml);
+    return gj.features.find(f=>f.geometry&&f.geometry.type==="LineString");
+  }
+  async function addArrowImage(){
+    const size=96,c=document.createElement("canvas"); c.width=c.height=size; const ctx=c.getContext("2d");
+    ctx.translate(size/2,size/2); ctx.beginPath(); const w=size*0.44,h=size*0.26;
+    ctx.moveTo(+w,0); ctx.lineTo(-w*0.6,-h); ctx.lineTo(-w*0.6,+h); ctx.closePath();
+    ctx.lineJoin="round"; ctx.lineCap="round"; ctx.lineWidth=3; ctx.strokeStyle="#EC2629"; ctx.fillStyle="#ffffff"; ctx.stroke(); ctx.fill();
+    const bmp=await createImageBitmap(c); map.addImage("arrow",bmp,{pixelRatio:2});
+  }
+  function clamp(v,l,h){return Math.max(l,Math.min(h,v));}
+
+  /* ================= LOAD ================= */
   map.on("load", async () => {
-    map.addSource("mapbox-dem", {
-      type: "raster-dem",
-      url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-      tileSize: 512,
-      maxzoom: 14
-    });
+    // Terrain + sky
+    map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1",tileSize:512});
+    map.setTerrain({source:"mapbox-dem",exaggeration:1});
+    map.addLayer({id:"sky",type:"sky",paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}});
 
-    const gpxResp = await fetch(GPX_URL);
-    const gpxText = await gpxResp.text();
-    const gpxDoc = new DOMParser().parseFromString(gpxText, "text/xml");
-    const geojson = toGeoJSON.gpx(gpxDoc);
-    const coords = geojson.features[0].geometry.coordinates;
+    // Route
+    map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+    map.addLayer({id:"route-line",type:"line",source:"route",paint:{
+      "line-color":"#EC2629","line-width":4,"line-opacity":0.95
+    }});
 
-    map.addSource("route", { type: "geojson", data: geojson });
-    map.addLayer({
-      id: "route",
-      type: "line",
-      source: "route",
-      paint: { "line-color": "#EC2629", "line-width": 4 }
-    });
+    // Arrows
+    await addArrowImage();
+    map.addLayer({id:"route-arrows",type:"symbol",source:"route",layout:{
+      "symbol-placement":"line","symbol-spacing":110,"icon-image":"arrow","icon-size":0.45,
+      "icon-allow-overlap":true,"icon-ignore-placement":true,"icon-rotation-alignment":"map","icon-keep-upright":false
+    },paint:{"icon-opacity":0.9}});
 
-    const marker = document.createElement("div");
-    marker.style.width = "16px";
-    marker.style.height = "16px";
-    marker.style.background = "#fff";
-    marker.style.border = "3px solid #EC2629";
-    marker.style.borderRadius = "50%";
-    marker.style.boxShadow = "0 0 6px rgba(0,0,0,0.5)";
-    const dot = new mapboxgl.Marker(marker).setLngLat(coords[0]).addTo(map);
+    // Cursor dot
+    map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});
+    map.addLayer({id:"cursor-pt",type:"circle",source:"cursor",paint:{
+      "circle-radius":6,"circle-color":"#ffffff","circle-stroke-width":3,"circle-stroke-color":"#EC2629"
+    }});
 
-    let i = 0, playing = false, speed = 0.45, camMode = 0;
-
-    function animate() {
-      if (!playing) return;
-      i = (i + speed / 60) % coords.length;
-      const pos = coords[Math.floor(i)];
-      dot.setLngLat(pos);
-
-      if (camMode === 0) {
-        map.easeTo({ center: pos, bearing: map.getBearing() + 0.05, pitch: 65, zoom: START_ZOOM, duration: 50 });
-      } else if (camMode === 1) {
-        map.easeTo({ center: pos, pitch: 0, zoom: 15.9, duration: 50 });
+    // Load GPX
+    const text=await fetchText(GPX_URL);
+    const line=parseGpx(text);
+    if(line){
+      const len=turf.length(line,{units:"kilometers"});
+      const pts=[];
+      for(let d=0; d<=len; d+=0.01){
+        pts.push(turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates);
       }
-      requestAnimationFrame(animate);
+      route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};
+      routeLen=len;
+      map.getSource("route").setData(route);
+      map.getSource("cursor").setData(turf.point(route.geometry.coordinates[0]));
+
+      // Fit to full route (proper overview first)
+      const b=turf.bbox(route);
+      map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:80,pitch:75,bearing:-20,duration:0});
     }
 
-    document.getElementById("btnToggle").onclick = () => {
-      playing = !playing;
-      document.getElementById("iconPlay").classList.toggle("active", !playing);
-      document.getElementById("iconPause").classList.toggle("active", playing);
-      if (playing) animate();
-    };
-
-    document.getElementById("btnCam").onclick = () => {
-      camMode = (camMode + 1) % 3;
-      document.getElementById("iconCamCine").classList.toggle("active", camMode === 0);
-      document.getElementById("iconCamBird").classList.toggle("active", camMode === 1);
-      document.getElementById("iconCamFree").classList.toggle("active", camMode === 2);
-    };
-
-    const speedWrap = document.getElementById("speedWrap");
-    const speedSlider = document.getElementById("speed");
-    document.getElementById("btnSpeed").onclick = () => speedWrap.classList.toggle("open");
-    speedSlider.oninput = e => speed = parseFloat(e.target.value);
+    requestAnimationFrame(tick);
   });
+
+  /* ================= CONTROLS ================= */
+  const btnToggle=document.getElementById("btnToggle");
+  const playIcon=document.getElementById("iconPlay");
+  const pauseIcon=document.getElementById("iconPause");
+  btnToggle.addEventListener("click",()=>{
+    playing=!playing;
+    playIcon.classList.toggle("active",!playing);
+    pauseIcon.classList.toggle("active",playing);
+  });
+
+  const btnCam=document.getElementById("btnCam");
+  function iconSet(){return{
+    follow:document.getElementById("iconCamCine"),
+    topdown:document.getElementById("iconCamBird"),
+    free:document.getElementById("iconCamFree")
+  }}
+  btnCam.addEventListener("click",()=>{
+    camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
+    const i=iconSet(); Object.values(i).forEach(el=>el&&el.classList.remove("active"));
+    if(i[camMode]) i[camMode].classList.add("active");
+    if(camMode!=="free") userOverride=false;
+  });
+
+  const speedWrap=document.getElementById("speedWrap");
+  const speedInput=document.getElementById("speed");
+  document.getElementById("btnSpeed").addEventListener("click",(e)=>{e.stopPropagation();speedWrap.classList.toggle("open");});
+  document.addEventListener("click",()=>speedWrap.classList.remove("open"));
+
+  // If user manipulates the map in cinematic/top-down, stop auto camera (dot keeps moving)
+  ["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+    map.on(ev,e=>{
+      if((camMode==="follow"||camMode==="topdown")&&e&&e.originalEvent){ userOverride=true; }
+    });
+  });
+
+  /* ================= ANIMATION (SMOOTH) ================= */
+  function tick(ts){
+    if(!lastTs) lastTs=ts;
+    const dt=(ts-lastTs)/1000; lastTs=ts;
+
+    if(playing && route){
+      const sp=parseFloat(speedInput.value||"0.45");
+      progress+=sp*dt*0.28;                  // speed scaling
+      if(progress>routeLen) progress=0;
+
+      const pos=turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
+      const nxt=turf.along(route,Math.min(progress+.01,routeLen),{units:"kilometers"}).geometry.coordinates;
+
+      // Move dot
+      map.getSource("cursor").setData(turf.point(pos));
+
+      // Smooth camera (unless user is free-moving)
+      if((camMode==="follow"||camMode==="topdown") && !userOverride){
+        const targetCenter=pos.slice(0,2);
+        const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));
+        const targetPitch=(camMode==="topdown")?0:75;
+
+        if(camBearing===null) camBearing=targetBearing;
+        const diff=((targetBearing-camBearing+540)%360)-180;
+        camBearing += clamp(diff,-MAX_TURN_RATE*dt,MAX_TURN_RATE*dt);
+
+        if(!camCenter) camCenter=targetCenter;
+        camCenter=[
+          camCenter[0]+(targetCenter[0]-camCenter[0])*ALPHA,
+          camCenter[1]+(targetCenter[1]-camCenter[1])*ALPHA
+        ];
+
+        map.jumpTo({center:camCenter,bearing:camBearing,pitch:targetPitch,zoom:START_ZOOM});
+      }
+    }
+    requestAnimationFrame(tick);
+  }
   </script>
 </body>
 </html>
