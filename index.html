@@ -30,19 +30,13 @@
   <div class="ui">
     <!-- Play / Pause -->
     <button id="btnToggle" class="btn" aria-label="Play">
-      <svg id="iconPlay" class="active" viewBox="0 0 24 24">
-        <polygon transform="translate(1,0)" points="5,3 19,12 5,21"/>
-      </svg>
-      <svg id="iconPause" viewBox="0 0 24 24">
-        <rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/>
-      </svg>
+      <svg id="iconPlay" class="active" viewBox="0 0 24 24"><polygon transform="translate(1,0)" points="5,3 19,12 5,21"/></svg>
+      <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/></svg>
     </button>
 
     <!-- Camera mode -->
     <button id="btnCam" class="btn" aria-label="Camera mode">
-      <svg id="iconCamCine" viewBox="0 0 24 24" class="active">
-        <rect x="3" y="7" width="11" height="10" rx="2"/><polygon points="16,10 22,7.5 22,16.5 16,14"/>
-      </svg>
+      <svg id="iconCamCine" viewBox="0 0 24 24" class="active"><rect x="3" y="7" width="11" height="10" rx="2"/><polygon points="16,10 22,7.5 22,16.5 16,14"/></svg>
       <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg" viewBox="4.3333375 6.3333375 43.875 40.375" style="transform:translate(1px,1px)">
         <path d="M41.965,20.694c-0.495-2.083-2.273-3.54-4.182-3.54c-1.816,0-3.717,1.149-5.184,2.522c-3.911-5.328-9.661-9.706-13.112-12.527c-0.713,1.656-1.029,3.449-1.029,5.271c0,1.999,0.395,4.832,1.042,6.768L26,19.667H5.121c2.5,5.762,7.472,9.976,13.329,12.333c-3.699,2.583-6.778,4.415-10.271,6.815c2.034,2.034,3.384,2.935,6.606,4.035c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z M38.863,20.814c-0.426,0-0.769-0.345-0.769-0.769c0-0.426,0.343-0.768,0.769-0.768c0.424,0,0.769,0.342,0.769,0.768C39.632,20.469,39.287,20.814,38.863,20.814z" fill="#fff"/>
       </svg>
@@ -52,15 +46,12 @@
     <!-- Speed -->
     <div class="speed-wrap" id="speedWrap">
       <button id="btnSpeed" class="btn" aria-label="Speed">
-        <!-- Inline fallback so it ALWAYS shows -->
-        <svg id="iconSpeed" class="active" viewBox="0 0 24 24">
-          <path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/>
-        </svg>
+        <!-- INLINE FALLBACK, VISIBLE -->
+        <svg id="iconSpeed" class="active" viewBox="0 0 24 24"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/></svg>
       </button>
       <div class="speed-panel" id="speedPanel">
-        <svg id="iconSpeedPanel" class="speed-icon" viewBox="0 0 24 24">
-          <path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/>
-        </svg>
+        <!-- INLINE FALLBACK, VISIBLE -->
+        <svg id="iconSpeedPanel" class="speed-icon" viewBox="0 0 24 24"><path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"/></svg>
         <input id="speed" class="speed-slider" type="range" min="0.1" max="5" step="0.05" value="0.35"/>
       </div>
     </div>
@@ -77,11 +68,10 @@
   const SPEED_ICON= "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v=" + Date.now();
 
   const START_ZOOM = 15.7;
-  const CENTER_SMOOTH = 0.06;   // lower = smoother follow
-  const MAX_TURN_RATE = 4;      // deg/sec (very gentle)
-  const STEP_KM = 0.02;         // ~20 m sampling for smooth path
+  const CENTER_SMOOTH = 0.06;
+  const MAX_TURN_RATE = 4;
+  const STEP_KM = 0.02;
 
-  /* ===== Force white helper ===== */
   function forceWhite(svgEl){
     Array.from(svgEl.querySelectorAll("*")).forEach(n=>{
       if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff");
@@ -89,37 +79,33 @@
     });
   }
 
-  // Replace fallback icons with your GitHub ones (non-blocking)
+  // Replace the inline fallback speed icons with your GitHub SVG (preserving class="active")
   (async () => {
     try {
       const r = await fetch(SPEED_ICON, { mode:"cors", cache:"no-store" });
       const txt = await r.text();
-      const doc = new DOMParser().parseFromString(txt,"image/svg+xml");
+      const doc = new DOMParser().parseFromString(txt, "image/svg+xml");
       const svg = doc.querySelector("svg");
       if (svg) {
-        svg.style.width="24px"; svg.style.height="24px"; forceWhite(svg);
-        const svg2 = svg.cloneNode(true);
-        document.getElementById("iconSpeed").replaceWith(svg);
-        document.getElementById("iconSpeedPanel").replaceWith(svg2);
+        forceWhite(svg); svg.removeAttribute("width"); svg.removeAttribute("height"); svg.setAttribute("viewBox", svg.getAttribute("viewBox")||"0 0 24 24");
+        const s1 = svg.cloneNode(true), s2 = svg.cloneNode(true);
+        s1.id="iconSpeed"; s1.classList.add("active");  // keep visible in button
+        s2.id="iconSpeedPanel"; s2.classList.add("speed-icon");
+        document.getElementById("iconSpeed").replaceWith(s1);
+        document.getElementById("iconSpeedPanel").replaceWith(s2);
       }
     } catch {}
   })();
 
+  // Load hand (free camera) and keep it white
   (async () => {
     try{
-      const r=await fetch(HAND_ICON,{mode:"cors",cache:"no-store"});
-      const txt=await r.text();
-      const svg=new DOMParser().parseFromString(txt,"image/svg+xml").querySelector("svg");
-      if(svg){
-        svg.id="iconCamFree";
-        svg.style.width="24px"; svg.style.height="24px"; svg.style.transform="translate(2px,0)";
-        forceWhite(svg);
-        document.getElementById("iconCamFree").replaceWith(svg);
-      }
+      const r=await fetch(HAND_ICON,{mode:"cors",cache:"no-store"}); const t=await r.text();
+      const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+      if(svg){ svg.id="iconCamFree"; svg.style.width="24px"; svg.style.height="24px"; svg.style.transform="translate(2px,0)"; forceWhite(svg); document.getElementById("iconCamFree").replaceWith(svg); }
     }catch{}
   })();
 
-  /* ===== Map ===== */
   const map = new mapboxgl.Map({
     container:"map",
     style:"mapbox://styles/mapbox/satellite-streets-v12",
@@ -130,11 +116,9 @@
     antialias:true
   });
 
-  // State
   let route=null, routeLen=0, progress=0, playing=false, camMode="follow", userOverride=false;
   let camCenter=null, camBearing=null, lastTs=0;
 
-  // Helpers
   async function fetchText(url){
     try{const r=await fetch(url,{mode:"cors"}); if(r.ok) return await r.text();}catch(e){}
     try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(url)); if(r.ok) return await r.text();}catch(e){}
@@ -150,19 +134,16 @@
     const size=96,c=document.createElement("canvas"); c.width=c.height=size; const ctx=c.getContext("2d");
     ctx.translate(size/2,size/2); ctx.beginPath(); const w=size*0.44,h=size*0.26;
     ctx.moveTo(+w,0); ctx.lineTo(-w*0.6,-h); ctx.lineTo(-w*0.6,+h); ctx.closePath();
-    ctx.lineJoin="round"; ctx.lineCap="round"; ctx.lineWidth=3; ctx.strokeStyle="#EC2629"; ctx.fillStyle="#ffffff";
-    ctx.stroke(); ctx.fill();
+    ctx.lineJoin="round"; ctx.lineCap="round"; ctx.lineWidth=3; ctx.strokeStyle="#EC2629"; ctx.fillStyle="#ffffff"; ctx.stroke(); ctx.fill();
     const bmp=await createImageBitmap(c); map.addImage("arrow",bmp,{pixelRatio:2});
   }
   const clamp=(v,l,h)=>Math.max(l,Math.min(h,v));
 
   map.on("load", async () => {
-    // Terrain + sky
     map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1",tileSize:512});
     map.setTerrain({source:"mapbox-dem",exaggeration:1});
     map.addLayer({id:"sky",type:"sky",paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}});
 
-    // Route and arrows
     map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
     map.addLayer({id:"route-line",type:"line",source:"route",paint:{"line-color":"#EC2629","line-width":4,"line-opacity":0.95}});
     await addArrowImage();
@@ -171,13 +152,11 @@
       "icon-allow-overlap":true,"icon-ignore-placement":true,"icon-rotation-alignment":"map","icon-keep-upright":false
     },paint:{"icon-opacity":0.9}});
 
-    // Cursor dot
     map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});
     map.addLayer({id:"cursor-pt",type:"circle",source:"cursor",paint:{
       "circle-radius":6,"circle-color":"#ffffff","circle-stroke-width":3,"circle-stroke-color":"#EC2629"
     }});
 
-    // Load GPX → sample smoothly → set source
     const text=await fetchText(GPX_URL);
     const line=parseGpx(text);
     if(line){
@@ -190,8 +169,6 @@
       routeLen=len;
       map.getSource("route").setData(route);
       map.getSource("cursor").setData(turf.point(route.geometry.coordinates[0]));
-
-      // Fit AFTER the layers are idle so you get the full overview
       map.once("idle", ()=>{
         const b=turf.bbox(route);
         map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:80,pitch:75,bearing:-20,duration:0});
@@ -201,7 +178,6 @@
     requestAnimationFrame(tick);
   });
 
-  // Controls
   const btnToggle=document.getElementById("btnToggle");
   const playIcon=document.getElementById("iconPlay");
   const pauseIcon=document.getElementById("iconPause");
@@ -212,16 +188,12 @@
   });
 
   const btnCam=document.getElementById("btnCam");
-  function iconSet(){return{
-    follow:document.getElementById("iconCamCine"),
-    topdown:document.getElementById("iconCamBird"),
-    free:document.getElementById("iconCamFree")
-  }}
+  function iconSet(){return{follow:document.getElementById("iconCamCine"),topdown:document.getElementById("iconCamBird"),free:document.getElementById("iconCamFree")}}
   btnCam.addEventListener("click",()=>{
     camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
     const i=iconSet(); Object.values(i).forEach(el=>el&&el.classList.remove("active"));
     if(i[camMode]) i[camMode].classList.add("active");
-    if(camMode!=="free") userOverride=false; // resume auto camera if not free
+    if(camMode!=="free") userOverride=false;
   });
 
   const speedWrap=document.getElementById("speedWrap");
@@ -229,14 +201,12 @@
   document.getElementById("btnSpeed").addEventListener("click",(e)=>{e.stopPropagation();speedWrap.classList.toggle("open");});
   document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-  // If user manipulates the map while in guided modes, freeze auto camera (dot keeps moving)
   ["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
     map.on(ev,e=>{
       if((camMode==="follow"||camMode==="topdown")&&e&&e.originalEvent){ userOverride=true; }
     });
   });
 
-  // Animation loop
   function tick(ts){
     if(!lastTs) lastTs=ts;
     const dt=(ts-lastTs)/1000; lastTs=ts;
@@ -258,7 +228,7 @@
 
         if(camBearing===null) camBearing=targetBearing;
         const diff=((targetBearing-camBearing+540)%360)-180;
-        camBearing += clamp(diff,-MAX_TURN_RATE*dt,MAX_TURN_RATE*dt);
+        camBearing += Math.max(-MAX_TURN_RATE*dt, Math.min(MAX_TURN_RATE*dt, diff));
 
         if(!camCenter) camCenter=targetCenter;
         camCenter=[
