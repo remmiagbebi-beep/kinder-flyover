@@ -9,14 +9,12 @@
     html,body{margin:0;height:100%;background:#000;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
     #map{position:absolute;inset:0;}
 
-    /* Right-side controls */
     .ui{position:absolute;top:50%;right:20px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:18px}
     .btn{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;cursor:pointer;user-select:none;transition:.15s;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35)}
     .btn:hover{background:linear-gradient(180deg,#3899EC,#297fc8)}
     .btn svg{fill:#fff;width:24px;height:24px;display:none}
     .btn svg.active{display:block}
 
-    /* Speed overlay that doesn't move buttons */
     .speed-wrap{position:relative;width:50px;height:50px}
     .speed-panel{position:absolute;top:50%;right:60px;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;width:230px;height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:9999px;border:3px solid #fff;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35);transition:opacity .18s,transform .18s}
     .speed-wrap.open .speed-panel{opacity:1;transform:translateY(-50%) scale(1);pointer-events:auto}
@@ -35,18 +33,20 @@
       <svg id="iconPause" viewBox="0 0 24 24"><rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/></svg>
     </button>
 
-    <!-- Camera mode toggle (Follow/Cinematic → Top-down → Free) -->
+    <!-- Camera mode toggle (Follow → Top-down → Free) -->
     <button id="btnCam" class="btn" aria-label="Camera mode">
-      <!-- Cinematic (video camera) -->
+      <!-- Cinematic -->
       <svg id="iconCamCine" viewBox="0 0 24 24" class="active">
         <rect x="3" y="7" width="11" height="10" rx="2"></rect>
         <polygon points="16,10 22,7.5 22,16.5 16,14"></polygon>
       </svg>
-      <!-- Top-down (bird) — currently aligned (up by 2px, left by 1px net from original) -->
-      <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg" viewBox="4.3333375 6.3333375 43.875 40.375" style="transform:translate(1px,0px)">
+
+      <!-- Top-down (bird) — reverted to translate(1px,1px) -->
+      <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg" viewBox="4.3333375 6.3333375 43.875 40.375" style="transform:translate(1px,1px)">
         <path d="M41.965,20.694c-0.495-2.083-2.273-3.54-4.182-3.54c-1.816,0-3.717,1.149-5.184,2.522  c-3.911-5.328-9.661-9.706-13.112-12.527c-0.713,1.656-1.029,3.449-1.029,5.271c0,1.999,0.395,4.832,1.042,6.768L26,19.667H5.121  c2.5,5.762,7.472,9.976,13.329,12.333c-3.699,2.583-6.778,4.415-10.271,6.815c2.034,2.034,3.384,2.935,6.606,4.035  c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603  c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z M38.863,20.814c-0.426,0-0.769-0.345-0.769-0.769  c0-0.426,0.343-0.768,0.769-0.768c0.424,0,0.769,0.342,0.769,0.768C39.632,20.469,39.287,20.814,38.863,20.814z" fill="#fff"></path>
       </svg>
-      <!-- Free (hand.svg from your GitHub /icons/hand.svg; replaced at runtime) -->
+
+      <!-- Free (placeholder; replaced at runtime with icons/hand.svg) -->
       <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
     </button>
 
@@ -72,39 +72,42 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
   <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
   <script>
-  /* ====== CONFIG ====== */
+  /* ================= CONFIG ================= */
   mapboxgl.accessToken = "pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
   const GPX_URL = "https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx?dn=Kinder%20Scout%20Hike.gpx";
-  /* Replace below with your real GitHub path to icons/hand.svg */
-  const HAND_ICON = "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/main/icons/hand.svg";
+  const HAND_ICON = "https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg"; /* update if path differs */
   const START_ZOOM = 15.7;
 
-  /* ====== LOAD EXTERNAL FREE-CAMERA ICON (hand.svg) ====== */
+  /* ====== Load external Free-camera icon (hand.svg) ====== */
   (async () => {
     try {
       const res = await fetch(HAND_ICON, { mode: "cors" });
-      if (!res.ok) throw new Error("SVG fetch failed");
+      if (!res.ok) throw new Error("hand.svg fetch failed");
       const svgText = await res.text();
-      // Replace placeholder SVG with your hand.svg markup
-      const holder = document.getElementById("iconCamFree");
-      holder.outerHTML = svgText;
-      // Re-target the inserted SVG so the rest of the code can find it by ID
-      const btnCam = document.getElementById("btnCam");
-      const inserted = btnCam.querySelector("svg:last-of-type");
-      inserted.id = "iconCamFree";
-      // Normalise size + force white fill for all shapes inside
-      inserted.setAttribute("width","24"); inserted.setAttribute("height","24");
-      inserted.style.width = "24px"; inserted.style.height = "24px";
-      Array.from(inserted.querySelectorAll("*")).forEach(n=>{
-        if (n.tagName.toLowerCase() !== "svg") {
-          if (!n.getAttribute("fill") || n.getAttribute("fill") !== "none") n.setAttribute("fill","#fff");
-          if (n.getAttribute("stroke")) n.setAttribute("stroke","#fff");
-        }
+      const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+      let svgEl = doc.querySelector("svg");
+      if (!svgEl) throw new Error("No <svg> in hand.svg");
+
+      svgEl.id = "iconCamFree";
+      svgEl.removeAttribute("width");
+      svgEl.removeAttribute("height");
+      if (!svgEl.getAttribute("viewBox")) svgEl.setAttribute("viewBox","0 0 24 24");
+      svgEl.style.width = "24px";
+      svgEl.style.height = "24px";
+
+      Array.from(svgEl.querySelectorAll("*")).forEach(n=>{
+        const t=n.tagName.toLowerCase();
+        if(t==="svg") return;
+        const f=n.getAttribute("fill");
+        if(!f || f.toLowerCase()!=="none") n.setAttribute("fill","#fff");
+        if(n.hasAttribute("stroke")) n.setAttribute("stroke","#fff");
       });
+
+      const holder = document.getElementById("iconCamFree");
+      holder.replaceWith(svgEl);
     } catch(e) {
-      // Fallback if fetch fails: draw a simple cube icon
-      const fallback = document.getElementById("iconCamFree");
-      fallback.innerHTML = `
+      const holder = document.getElementById("iconCamFree");
+      holder.innerHTML = `
         <polygon points="12,2 20,6 12,10 4,6"></polygon>
         <polygon points="12,10 20,6 20,14 12,18"></polygon>
         <polygon points="12,10 12,18 4,14 4,6"></polygon>
@@ -112,7 +115,7 @@
     }
   })();
 
-  /* ====== MAP ====== */
+  /* ================= MAP ================= */
   const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/satellite-streets-v12",
@@ -123,11 +126,11 @@
     antialias: true
   });
 
-  /* ====== STATE ====== */
+  /* ================= STATE ================= */
   let route=null, routeLen=0, progress=0, playing=false, camMode="follow", userOverride=false;
   const alpha=0.07, MAX_TURN_RATE=10;
 
-  /* ====== HELPERS ====== */
+  /* ================= HELPERS ================= */
   async function fetchText(url){
     try{const r=await fetch(url,{mode:"cors"});if(r.ok)return await r.text();}catch(e){}
     try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(url));if(r.ok)return await r.text();}catch(e){}
@@ -147,29 +150,28 @@
     const bmp=await createImageBitmap(c);map.addImage("arrow",bmp,{pixelRatio:2});
   }
 
-  /* ====== LOAD GPX & LAYERS ====== */
+  /* ================= LOAD & LAYERS ================= */
   map.on("load", async () => {
-    // Terrain + sky
     map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1",tileSize:512});
     map.setTerrain({source:"mapbox-dem",exaggeration:1});
     map.addLayer({id:"sky",type:"sky",paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}});
 
-    // Route
     map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-    map.addLayer({id:"route-line",type:"line",source:"route",paint:{"line-color":"#EC2629","line-width":4,"line-opacity":0.95}});
+
+    map.addLayer({id:"route-line",type:"line",source:"route",
+      paint:{"line-color":"#EC2629","line-width":4,"line-opacity":0.95}});
+
     await ensureArrow();
     map.addLayer({id:"route-arrows",type:"symbol",source:"route",layout:{
       "symbol-placement":"line","symbol-spacing":110,"icon-image":"arrow","icon-size":0.45,
       "icon-allow-overlap":true,"icon-ignore-placement":true,"icon-rotation-alignment":"map","icon-keep-upright":false
     },paint:{"icon-opacity":0.9}});
 
-    // Cursor (white dot, 3px #EC2629 border)
     map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});
     map.addLayer({id:"cursor-pt",type:"circle",source:"cursor",paint:{
       "circle-radius":6,"circle-color":"#ffffff","circle-stroke-width":3,"circle-stroke-color":"#EC2629"
     }});
 
-    // GPX
     const text=await fetchText(GPX_URL);
     const line=parseGpx(text);
     if(line){
@@ -189,8 +191,7 @@
     requestAnimationFrame(tick);
   });
 
-  /* ====== CONTROLS ====== */
-  // Play/Pause
+  /* ================= CONTROLS ================= */
   const btnToggle=document.getElementById("btnToggle");
   const playIcon=document.getElementById("iconPlay");
   const pauseIcon=document.getElementById("iconPause");
@@ -200,40 +201,32 @@
     pauseIcon.classList.toggle("active",playing);
   });
 
-  // Camera cycle (follow -> topdown -> free)
   const btnCam=document.getElementById("btnCam");
-  function getIcons(){
-    return {
-      follow:document.getElementById("iconCamCine"),
-      topdown:document.getElementById("iconCamBird"),
-      free:document.getElementById("iconCamFree")
-    };
-  }
+  function icons(){return {
+    follow:document.getElementById("iconCamCine"),
+    topdown:document.getElementById("iconCamBird"),
+    free:document.getElementById("iconCamFree")
+  };}
   btnCam.addEventListener("click",()=>{
     camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
-    const icons=getIcons();
-    Object.values(icons).forEach(i=>i && i.classList.remove("active"));
-    if (icons[camMode]) icons[camMode].classList.add("active");
+    const i=icons();
+    Object.values(i).forEach(el=>el && el.classList.remove("active"));
+    if(i[camMode]) i[camMode].classList.add("active");
     if(camMode!=="free") userOverride=false;
   });
 
-  // Speed overlay
   const speedWrap=document.getElementById("speedWrap");
   const speedInput=document.getElementById("speed");
-  speedWrap.addEventListener("click",(e)=>{
-    e.stopPropagation();
-    speedWrap.classList.toggle("open");
-  });
+  speedWrap.addEventListener("click",(e)=>{e.stopPropagation();speedWrap.classList.toggle("open");});
   document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-  // If user manipulates map in follow/topdown, stop auto camera (dot keeps moving)
   ["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
     map.on(ev,e=>{
       if((camMode==="follow"||camMode==="topdown")&&e&&e.originalEvent){ userOverride=true; }
     });
   });
 
-  /* ====== ANIMATION LOOP ====== */
+  /* ================= ANIMATION ================= */
   let camCenter=null,camBearing=null,lastTs=0;
   function clamp(v,l,h){return Math.max(l,Math.min(h,v));}
 
