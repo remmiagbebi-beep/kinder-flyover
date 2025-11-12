@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kinder Scout 3D Flyover</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+    #map{position:absolute;inset:0;}
+
+    /* Right-side vertical stack */
+    .ui{position:absolute;top:50%;right:20px;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:19px}
+    .btn{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;cursor:pointer;user-select:none;transition:.15s;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+    .btn:hover{background:linear-gradient(180deg,#3899EC,#297fc8)}
+    .btn:active{transform:scale(.96)}
+    .btn svg{fill:#fff;width:22px;height:22px}
+    .hidden{display:none}
+
+    /* Speed overlay that doesn't move the buttons */
+    .speed-wrap{position:relative;width:50px;height:50px}
+    .speed-panel{position:absolute;top:50%;right:60px;transform:translateY(-50%) scale(.98);opacity:0;pointer-events:none;width:230px;height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:9999px;border:3px solid #fff;background:linear-gradient(180deg,#EC2629,#b51d20);box-shadow:0 3px 10px rgba(0,0,0,.35);transition:opacity .18s,transform .18s}
+    .speed-wrap.open .speed-panel{opacity:1;transform:translateY(-50%) scale(1);pointer-events:auto}
+    .speed-slider{flex:1;appearance:none;height:6px;border-radius:999px;outline:none;background:linear-gradient(90deg,#fff,#fff8)}
+    .speed-slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #EC2629;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="ui">
+    <!-- Play / Pause -->
+    <button id="btnToggle" class="btn" aria-label="Play">
+      <svg id="iconPlay" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <svg id="iconPause" class="hidden" viewBox="0 0 24 24">
+        <rect x="6" y="4" width="5" height="16" rx="1.5"/><rect x="13" y="4" width="5" height="16" rx="1.5"/>
+      </svg>
+    </button>
+
+    <!-- Camera mode toggle -->
+    <button id="btnCam" class="btn" aria-label="Camera: Cinematic">
+      <!-- Cinematic (video camera) -->
+      <svg id="iconCamCine" viewBox="0 0 24 24">
+        <rect x="3" y="7" width="11" height="10" rx="2"/><polygon points="16,10 22,7.5 22,16.5 16,14"/>
+      </svg>
+      <!-- Birds-eye (your uploaded bird SVG, inlined) -->
+      <svg id="iconCamBird" class="hidden" viewBox="0 0 64 64">
+        <path d="M42.2 17.7c-3.5.5-6.5 2.7-8 5.7-4.5-1.6-8.5-1.8-12.3-.8-3.2.8-5.9 2.5-8 4.6l-4.2 4.1 4.7-.6c.8-.1 1.4.5 1.2 1.3l-.6 2.6 2.3-1.4c.5-.3 1.1 0 1.2.5.6 2.1 1.9 4 3.8 5.4l1.5 1.1-1.4 1.2c-.7.6-.3 1.8.6 1.8h.6l.5.5c1.8 1.6 3.9 2.6 6.1 3.2-1.3.6-2.5 1.2-3.8 1.7-.7.3-.5 1.4.3 1.4 4.3 0 8.7-1.1 12.4-3.6 4.1 2.6 9.4 3.7 14.5 2.9 5.3-.9 10.1-3.7 13.4-7.4 1.4-1.6 2.6-3.3 3.6-5.1-3.2.7-6.5.8-9.8.4-3.3-.5-6.5-1.5-9.4-2.9l2.8-2.7c.5-.5.1-1.3-.6-1.3h-3.2c-1.2 0-2.3.4-3.3 1.1l-3.1-4.5c-.3-.5-.8-.7-1.3-.6l-.8.2.4-1.6c.1-.4.4-.8.8-1.1 2.7-1.8 5.9-3 9.1-3.4.7 0 .9-.9.3-1.2-1.8-1-3.9-1.3-6-1z" fill="#fff"/>
+      </svg>
+      <!-- Free (cube) -->
+      <svg id="iconCamFree" class="hidden" viewBox="0 0 24 24">
+        <polygon points="12,2 20,6 12,10 4,6"/><polygon points="12,10 20,6 20,14 12,18"/><polygon points="12,10 12,18 4,14 4,6"/>
+      </svg>
+    </button>
+
+    <!-- Speed button (running man) with overlay slider -->
+    <div class="speed-wrap" id="speedWrap">
+      <button id="btnSpeed" class="btn" aria-label="Speed">
+        <svg class="speed-icon" viewBox="0 0 24 24">
+          <circle cx="17.5" cy="5.5" r="2.2" fill="#fff"/>
+          <path d="M12.2 9.2l2.4-1.8c.7-.5 1.6-.4 2.2.2l1.6 1.6-1.4 1.4-1.3-1.3-1.9 1.4 1.7 2.9 3.1.9-.5 1.9-3.9-1.1c-.5-.1-.9-.4-1.1-.8l-1.6-2.7-1.1 2.3c-.2.4-.5.7-1 .8L7 15.7l1.2 3.2H6.1L4.4 13l3.8-1.2 1.5-3.2 2.5.6z" fill="#fff"/>
+          <rect x="2" y="10.5" width="4.2" height="1.6" rx="0.8" fill="#fff"/>
+          <rect x="2" y="13.5" width="3.0" height="1.6" rx="0.8" fill="#fff"/>
+        </svg>
+      </button>
+
+      <div class="speed-panel" id="speedPanel">
+        <svg class="speed-icon" viewBox="0 0 24 24">
+          <circle cx="17.5" cy="5.5" r="2.2" fill="#fff"/>
+          <path d="M12.2 9.2l2.4-1.8c.7-.5 1.6-.4 2.2.2l1.6 1.6-1.4 1.4-1.3-1.3-1.9 1.4 1.7 2.9 3.1.9-.5 1.9-3.9-1.1c-.5-.1-.9-.4-1.1-.8l-1.6-2.7-1.1 2.3c-.2.4-.5.7-1 .8L7 15.7l1.2 3.2H6.1L4.4 13l3.8-1.2 1.5-3.2 2.5.6z" fill="#fff"/>
+          <rect x="2" y="10.5" width="4.2" height="1.6" rx="0.8" fill="#fff"/>
+          <rect x="2" y="13.5" width="3.0" height="1.6" rx="0.8" fill="#fff"/>
+        </svg>
+        <input id="speed" class="speed-slider" type="range" min="0.1" max="5" step="0.05" value="0.45"/>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
+  <script>
+  mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
+  const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx?dn=Kinder%20Scout%20Hike.gpx";
+
+  const map=new mapboxgl.Map({
+    container:"map",style:"mapbox://styles/mapbox/satellite-streets-v12",
+    center:[-1.8743,53.3832],zoom:15.7,pitch:75,bearing:-20,antialias:true
+  });
+  map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}),"top-right");
+  map.addControl(new mapboxgl.ScaleControl({maxWidth:140,unit:"metric"}));
+
+  // UI refs
+  const ui={
+    toggle:document.getElementById("btnToggle"),
+    iconPlay:document.getElementById("iconPlay"),
+    iconPause:document.getElementById("iconPause"),
+    camBtn:document.getElementById("btnCam"),
+    iconCamCine:document.getElementById("iconCamCine"),
+    iconCamBird:document.getElementById("iconCamBird"),
+    iconCamFree:document.getElementById("iconCamFree"),
+    speedWrap:document.getElementById("speedWrap"),
+    speed:document.getElementById("speed")
+  };
+
+  let route=null,routeLen=0,progress=0,playing=false,lastTs=0,userOverride=false,camMode="follow";
+
+  // Arrow icon for route direction
+  async function ensureArrowIcon(){
+    const key="route-arrow-white";
+    if(map.hasImage && map.hasImage(key)) return;
+    const size=96,c=document.createElement("canvas");c.width=c.height=size;
+    const ctx=c.getContext("2d");ctx.translate(size/2,size/2);
+    ctx.beginPath();const w=size*0.44,h=size*0.26;
+    ctx.moveTo(+w,0);ctx.lineTo(-w*0.6,-h);ctx.lineTo(-w*0.6,+h);ctx.closePath();
+    ctx.lineJoin="round";ctx.lineCap="round";ctx.lineWidth=3;
+    ctx.strokeStyle="#EC2629";ctx.fillStyle="#ffffff";
+    ctx.stroke();ctx.fill();
+    const bmp=await createImageBitmap(c);
+    map.addImage(key,bmp,{pixelRatio:2});
+  }
+
+  async function fetchTextWithFallback(url){
+    try{const r=await fetch(url,{mode:"cors"}); if(r.ok) return await r.text();}catch(e){}
+    try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(url)); if(r.ok) return await r.text();}catch(e){}
+    return "";
+  }
+  function parseGpxText(gpxText){
+    const xml=new DOMParser().parseFromString(gpxText,"application/xml");
+    const gj=toGeoJSON.gpx(xml);
+    return gj.features.find(f=>f.geometry&&f.geometry.type==="LineString");
+  }
+  async function loadFromGeoJSON(line){
+    const lenKm=turf.length(line,{units:"kilometers"});
+    const pts=[];
+    for(let d=0;d<=lenKm;d+=0.01){
+      pts.push(turf.along(line,Math.min(d,lenKm),{units:"kilometers"}).geometry.coordinates);
+    }
+    route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};
+    routeLen=lenKm;progress=0;
+
+    // Update the single, shared route source
+    map.getSource("route").setData(route);
+    map.getSource("cursor").setData(turf.point(route.geometry.coordinates[0]));
+
+    const b=turf.bbox(route);
+    map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:80,pitch:75,bearing:-20,duration:0});
+  }
+
+  map.on("load",async()=>{
+    // Terrain
+    map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1",tileSize:512});
+    map.setTerrain({source:"mapbox-dem",exaggeration:1});
+
+    // Route + layers (IMPORTANT: add source first, then layers that reference it)
+    map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+
+    map.addLayer({id:"route-line",type:"line",source:"route",
+      paint:{"line-color":"#EC2629","line-width":4,"line-opacity":0.95}});
+
+    await ensureArrowIcon();
+    map.addLayer({id:"route-arrows",type:"symbol",source:"route",layout:{
+      "symbol-placement":"line","symbol-spacing":110,"icon-image":"route-arrow-white","icon-size":0.45,
+      "icon-allow-overlap":true,"icon-ignore-placement":true,"icon-rotation-alignment":"map","icon-keep-upright":false
+    },paint:{"icon-opacity":0.9}});
+
+    // Cursor
+    map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});
+    map.addLayer({id:"cursor-pt",type:"circle",source:"cursor",paint:{
+      "circle-radius":6,"circle-color":"#ffffff","circle-stroke-width":3,"circle-stroke-color":"#EC2629"
+    }});
+
+    // Load GPX
+    const text=await fetchTextWithFallback(GPX_URL);
+    const line=parseGpxText(text);
+    if(line) await loadFromGeoJSON(line);
+
+    requestAnimationFrame(tick);
+  });
+
+  // Controls
+  function setPlaying(on){playing=!!on;ui.iconPlay.classList.toggle("hidden",on);ui.iconPause.classList.toggle("hidden",!on);}
+  document.getElementById("btnToggle").onclick=()=>{ if(route) setPlaying(!playing); };
+
+  function updateCamIcons(){
+    ui.iconCamCine.classList.toggle("hidden",camMode!=="follow");
+    ui.iconCamBird.classList.toggle("hidden",camMode!=="topdown");
+    ui.iconCamFree.classList.toggle("hidden",camMode!=="free");
+  }
+  document.getElementById("btnCam").onclick=()=>{
+    camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
+    if(camMode!=="free") userOverride=false;
+    updateCamIcons();
+  };
+  updateCamIcons();
+
+  document.getElementById("speedWrap").onclick=()=> document.getElementById("speedWrap").classList.toggle("open");
+
+  // Camera smoothing
+  let camCenter=null,camBearing=null;const alpha=.07,MAX_TURN_RATE=10;
+  function clamp(v,l,h){return Math.max(l,Math.min(h,v));}
+  ["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+    map.on(ev,e=>{
+      if((camMode==="follow"||camMode==="topdown")&&e&&e.originalEvent){ userOverride=true; }
+    });
+  });
+
+  function tick(ts){
+    if(!lastTs) lastTs=ts;
+    const dt=(ts-lastTs)/1000; lastTs=ts;
+
+    if(playing&&route){
+      const speed=parseFloat(document.getElementById("speed").value);
+      progress+=speed*dt*0.28;
+      if(progress>routeLen)progress=0;
+
+      const pos=turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
+      const nxt=turf.along(route,Math.min(progress+.01,routeLen),{units:"kilometers"}).geometry.coordinates;
+      map.getSource("cursor").setData(turf.point(pos));
+
+      if((camMode==="follow"||camMode==="topdown")&&!userOverride){
+        const targetCenter=pos.slice(0,2);
+        const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));
+        const targetPitch=(camMode==="topdown")?0:75;
+
+        if(camBearing===null) camBearing=targetBearing;
+        const diff=((targetBearing-camBearing+540)%360)-180;
+        camBearing+=clamp(diff,-MAX_TURN_RATE*dt,MAX_TURN_RATE*dt);
+
+        if(!camCenter) camCenter=targetCenter;
+        camCenter=[ camCenter[0]+(targetCenter[0]-camCenter[0])*alpha,
+                    camCenter[1]+(targetCenter[1]-camCenter[1])*alpha ];
+
+        map.jumpTo({center:camCenter,bearing:camBearing,pitch:targetPitch,zoom:15.7});
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  </script>
+</body>
+</html>
