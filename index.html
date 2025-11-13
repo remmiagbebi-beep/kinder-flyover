@@ -206,6 +206,7 @@ mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE
 const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
 
 const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
+let currentZoom=START_ZOOM;   // single source of truth for zoom
 
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
@@ -260,9 +261,18 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Zoom buttons */
-document.getElementById("btnZoomIn").onclick=()=> map.zoomIn();
-document.getElementById("btnZoomOut").onclick=()=> map.zoomOut();
+/* Keep currentZoom in sync with any zoom change (wheel, trackpad, buttons) */
+map.on("zoom",()=>{ currentZoom = map.getZoom(); });
+
+/* Zoom buttons: adjust currentZoom and set map zoom */
+document.getElementById("btnZoomIn").onclick=()=>{
+  currentZoom = Math.min(currentZoom + 0.5, 19);
+  map.setZoom(currentZoom);
+};
+document.getElementById("btnZoomOut").onclick=()=>{
+  currentZoom = Math.max(currentZoom - 0.5, 4);
+  map.setZoom(currentZoom);
+};
 
 /* Fullscreen button */
 const btnFull=document.getElementById("btnFull");
@@ -330,7 +340,7 @@ map.on("load",async()=>{
     paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}
   });
 
-  /* OS-style overlay: OpenTopoMap raster layer */
+  /* OS-style overlay: OpenTopoMap raster layer (maxzoom to avoid black tiles) */
   map.addSource("os-topo",{
     type:"raster",
     tiles:[
@@ -338,7 +348,8 @@ map.on("load",async()=>{
       "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
       "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
     ],
-    tileSize:256
+    tileSize:256,
+    maxzoom:17
   });
   map.addLayer({
     id:"os-topo-layer",
@@ -414,6 +425,7 @@ map.on("load",async()=>{
       map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
         padding:80,pitch:75,bearing:-20,duration:0
       });
+      currentZoom = map.getZoom();   // sync overview zoom
     });
   }
 
@@ -499,11 +511,11 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
-      /* IMPORTANT CHANGE: do NOT force zoom here */
       map.jumpTo({
         center:camCenter,
         bearing:camBearing,
-        pitch:targetPitch
+        pitch:targetPitch,
+        zoom:currentZoom   // animation respects current zoom
       });
     }
   }
