@@ -215,7 +215,7 @@ function forceWhite(svg){
   });
 }
 
-/* Replace Free icon with hand.svg from GitHub */
+/* Replace Free icon with hand.svg from GitHub (NO active class here) */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg?v="+Date.now());
@@ -224,7 +224,6 @@ function forceWhite(svg){
     if(svg){
       forceWhite(svg);
       svg.id="iconCamFree";
-      svg.classList.add("active");
       svg.style.width="24px";
       svg.style.height="24px";
       svg.style.transform="translate(2px,0)";
@@ -261,10 +260,10 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Keep currentZoom in sync with any zoom change (wheel, trackpad, buttons) */
+/* Keep currentZoom in sync with any zoom change */
 map.on("zoom",()=>{ currentZoom = map.getZoom(); });
 
-/* Zoom buttons: adjust currentZoom and set map zoom */
+/* Zoom buttons */
 document.getElementById("btnZoomIn").onclick=()=>{
   currentZoom = Math.min(currentZoom + 0.5, 19);
   map.setZoom(currentZoom);
@@ -340,7 +339,7 @@ map.on("load",async()=>{
     paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}
   });
 
-  /* OS-style overlay: OpenTopoMap raster layer (maxzoom to avoid black tiles) */
+  /* OS-style overlay */
   map.addSource("os-topo",{
     type:"raster",
     tiles:[
@@ -425,7 +424,7 @@ map.on("load",async()=>{
       map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
         padding:80,pitch:75,bearing:-20,duration:0
       });
-      currentZoom = map.getZoom();   // sync overview zoom
+      // keep currentZoom as START_ZOOM for when play begins
     });
   }
 
@@ -435,6 +434,13 @@ map.on("load",async()=>{
 /* Play / Pause */
 document.getElementById("btnToggle").onclick=()=>{
   playing=!playing;
+
+  if(playing){
+    // reset to cinematic zoom when flyover starts
+    currentZoom = START_ZOOM;
+    map.setZoom(currentZoom);
+  }
+
   document.getElementById("iconPlay").classList.toggle("active",!playing);
   document.getElementById("iconPause").classList.toggle("active",playing);
 };
