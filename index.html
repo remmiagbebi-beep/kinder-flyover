@@ -207,7 +207,6 @@ const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a
 
 const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
 
-/* helper: force SVG white */
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
     if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff");
@@ -345,7 +344,7 @@ map.on("load",async()=>{
     id:"os-topo-layer",
     type:"raster",
     source:"os-topo",
-    paint:{"raster-opacity":0}  /* start hidden */
+    paint:{"raster-opacity":0}
   });
 
   /* Route + cursor */
@@ -500,11 +499,11 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
+      /* IMPORTANT CHANGE: do NOT force zoom here */
       map.jumpTo({
         center:camCenter,
         bearing:camBearing,
-        pitch:targetPitch,
-        zoom:START_ZOOM
+        pitch:targetPitch
       });
     }
   }
