@@ -437,9 +437,9 @@ map.on("load",async()=>{
       map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
         padding:80,pitch:75,bearing:-20,duration:0
       });
-      /* sync zoom state after initial fit */
-      currentZoom = map.getZoom();
-      targetZoom  = currentZoom;
+      /* force base zoom to your preferred value for follow mode */
+      currentZoom = START_ZOOM;
+      targetZoom  = START_ZOOM;
     });
   }
 
@@ -460,12 +460,12 @@ document.getElementById("btnToggle").onclick=()=>{
   playing=!playing;
 
   if(playing){
-    /* starting flyover: clear override, lock current zoom */
+    /* starting flyover: clear override, reset camera state, force zoom to START_ZOOM */
     userOverride=false;
     camCenter=null;
     camBearing=null;
-    currentZoom = map.getZoom();
-    targetZoom  = currentZoom;
+    currentZoom = START_ZOOM;
+    targetZoom  = START_ZOOM;
   }
 
   document.getElementById("iconPlay").classList.toggle("active",!playing);
@@ -479,9 +479,9 @@ document.getElementById("btnRestart").onclick=()=>{
   map.getSource("cursor").setData(turf.point(startCoord));
   camCenter=null;
   camBearing=null;
-  /* do not touch camMode, but keep current zoom as base */
-  currentZoom = map.getZoom();
-  targetZoom  = currentZoom;
+  /* keep camMode, but reset zoom to preferred base */
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
 };
 
 document.getElementById("btnReset").onclick=()=>{
@@ -494,8 +494,8 @@ document.getElementById("btnReset").onclick=()=>{
   const icons=camIcons();
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons.follow.classList.add("active");
-  currentZoom = map.getZoom();
-  targetZoom  = currentZoom;
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
 };
 
 const btnCam=document.getElementById("btnCam");
@@ -509,12 +509,12 @@ btnCam.onclick=()=>{
     /* free = user in charge */
     userOverride=true;
   }else{
-    /* follow/topdown via button = re-enable autopilot */
+    /* follow/topdown via button = re-enable autopilot at base zoom */
     userOverride=false;
     camCenter=null;
     camBearing=null;
-    currentZoom = map.getZoom();
-    targetZoom  = currentZoom;
+    currentZoom = START_ZOOM;
+    targetZoom  = START_ZOOM;
   }
 };
 
@@ -577,9 +577,10 @@ document.getElementById("btnZoomOut").onclick=()=>{
   }
 };
 
-/* Take control: any actual interaction during flyover sets userOverride=true but keeps camMode */
+/* Take control: ONLY user-originated interaction sets userOverride */
 ["mousedown","touchstart","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
+    if(!e.originalEvent) return;              // autopilot changes do NOT trigger override
     if(playing && (camMode==="follow"||camMode==="topdown")){
       userOverride=true;
     }
@@ -617,7 +618,7 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
-      /* smooth zoom during autopilot */
+      /* smooth zoom during autopilot, starting from START_ZOOM */
       const dz = targetZoom - currentZoom;
       const zoomLerp = Math.min(1, 3*dt);
       currentZoom = currentZoom + dz*zoomLerp;
