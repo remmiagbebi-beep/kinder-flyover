@@ -18,13 +18,14 @@
     .ui{
       position:absolute;
       top:50%;
-      right:20px;
       transform:translateY(-50%);
       z-index:10;
       display:flex;
       flex-direction:column;
       gap:18px;
     }
+    .ui-right{ right:20px; }
+    .ui-left{ left:20px; }
 
     .btn{
       width:50px;
@@ -107,9 +108,10 @@
 <body>
 <div id="map"></div>
 
-<div class="ui">
+<!-- LEFT COLUMN: Play / Restart / Reset View / Camera -->
+<div class="ui ui-left">
 
-  <!-- Play -->
+  <!-- Play / Pause -->
   <button id="btnToggle" class="btn">
     <svg id="iconPlay"  class="active" viewBox="0 0 24 24">
       <polygon transform="translate(1,0)" points="5,3 19,12 5,21"></polygon>
@@ -120,7 +122,22 @@
     </svg>
   </button>
 
-  <!-- Camera -->
+  <!-- Restart flyover (go back to start and play) -->
+  <button id="btnRestart" class="btn">
+    <svg id="iconRestart" class="active" viewBox="0 0 24 24">
+      <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M5 9a7 7 0 1 1-1.5 4.3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </button>
+
+  <!-- Reset view (back to cinematic follow at current point) -->
+  <button id="btnReset" class="btn">
+    <svg id="iconResetView" class="active" viewBox="0 0 24 24">
+      <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" fill="#fff"></path>
+    </svg>
+  </button>
+
+  <!-- Camera mode -->
   <button id="btnCam" class="btn">
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
@@ -138,6 +155,24 @@
     </svg>
 
     <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
+  </button>
+</div>
+
+<!-- RIGHT COLUMN: Fullscreen / Zoom / Layers / Speed -->
+<div class="ui ui-right">
+
+  <!-- Fullscreen -->
+  <button id="btnFull" class="btn">
+    <svg id="iconFull" class="active" viewBox="0 0 24 24">
+      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+    </svg>
   </button>
 
   <!-- Zoom In -->
@@ -164,20 +199,6 @@
     <svg id="iconLayers" class="active"></svg>
   </button>
 
-  <!-- Fullscreen -->
-  <button id="btnFull" class="btn">
-    <svg id="iconFull" class="active" viewBox="0 0 24 24">
-      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-    </svg>
-  </button>
-
   <!-- Speed -->
   <div class="speed-wrap" id="speedWrap">
     <button id="btnSpeed" class="btn">
@@ -191,7 +212,6 @@
              type="range" min="0.1" max="5" step="0.05" value="0.35">
     </div>
   </div>
-
 </div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
@@ -214,7 +234,7 @@ function forceWhite(svg){
   });
 }
 
-/* Free icon from GitHub */
+/* Free (hand) icon from GitHub */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg");
@@ -467,6 +487,67 @@ document.getElementById("btnToggle").onclick=()=>{
   document.getElementById("iconPause").classList.toggle("active",playing);
 };
 
+/* Restart flyover: go back to start and start playing */
+document.getElementById("btnRestart").onclick=()=>{
+  if(!route) return;
+  progress = 0;
+  const startCoord = route.geometry.coordinates[0];
+  map.getSource("cursor").setData(turf.point(startCoord));
+
+  // Reset camera smoothing so it re-locks nicely
+  camCenter = null;
+  camBearing = null;
+  userOverride = false;
+  camMode = "follow";
+
+  const icons = camIcons();
+  Object.values(icons).forEach(i=>i.classList.remove("active"));
+  icons.follow.classList.add("active");
+
+  // Start playing from the beginning
+  playing = true;
+  document.getElementById("iconPlay").classList.remove("active");
+  document.getElementById("iconPause").classList.add("active");
+
+  targetZoom = START_ZOOM;
+  currentZoom = START_ZOOM;
+
+  map.easeTo({
+    center:startCoord,
+    zoom:START_ZOOM,
+    pitch:75,
+    bearing:-20,
+    duration:400
+  });
+};
+
+/* Reset view: go back to cinematic follow at current progress */
+document.getElementById("btnReset").onclick=()=>{
+  if(!route) return;
+
+  userOverride = false;
+  camMode = "follow";
+
+  const icons = camIcons();
+  Object.values(icons).forEach(i=>i.classList.remove("active"));
+  icons.follow.classList.add("active");
+
+  camCenter = null;
+  camBearing = null;
+
+  const pos = turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
+  targetZoom = START_ZOOM;
+  currentZoom = START_ZOOM;
+
+  map.easeTo({
+    center:pos,
+    zoom:START_ZOOM,
+    pitch:75,
+    bearing:-20,
+    duration:400
+  });
+};
+
 /* Camera modes */
 const btnCam=document.getElementById("btnCam");
 function camIcons(){
@@ -500,10 +581,11 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+/* Let user take control as soon as they click / drag during flyover */
+["mousedown","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
-    if((camMode==="follow"||camMode==="topdown")&&e && e.originalEvent){
-      userOverride=true;
+    if(playing && (camMode==="follow"||camMode==="topdown")){
+      userOverride = true;
     }
   });
 });
