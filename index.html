@@ -52,7 +52,6 @@
     }
     .btn svg.active{ display:block }
 
-    /* Speed icon smaller */
     #iconSpeed{
       width:18px !important;
       height:18px !important;
@@ -303,7 +302,7 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Simple zoom buttons */
+/* Zoom buttons */
 document.getElementById("btnZoomIn").onclick=()=>{
   map.easeTo({ zoom: map.getZoom()+0.7, duration:600 });
 };
@@ -333,7 +332,7 @@ btnFull.onclick=()=>{
 };
 
 /* State */
-let route=null,routeLen=0,progress=0,playing=false,camMode="follow",userOverride=false;
+let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
 let camCenter=null,camBearing=null,lastTs=0;
 let osVisible=false;
 
@@ -446,7 +445,9 @@ map.on("load",async()=>{
     const len=turf.length(line,{units:"kilometers"});
     const pts=[];
     for(let d=0;d<=len;d+=STEP_KM){
-      pts.push(turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates);
+      pts.push(
+        turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates
+      );
     }
     route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};
     routeLen=len;
@@ -483,7 +484,6 @@ document.getElementById("btnRestart").onclick=()=>{
 
 document.getElementById("btnReset").onclick=()=>{
   if(!route) return;
-  userOverride=false;
   camMode="follow";
   camCenter=null;
   camBearing=null;
@@ -506,7 +506,6 @@ btnCam.onclick=()=>{
   const icons=camIcons();
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons[camMode].classList.add("active");
-  if(camMode!=="free") userOverride=false;
 };
 
 /* Layers toggle */
@@ -523,16 +522,7 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* User takes control as soon as they interact with the map */
-["mousedown","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
-  map.on(ev,e=>{
-    if((camMode==="follow"||camMode==="topdown") && playing){
-      userOverride=true;
-    }
-  });
-});
-
-/* Animation loop – this is your original working logic */
+/* Animation loop – always follows when in follow/topdown */
 function tick(ts){
   if(!lastTs) lastTs=ts;
   const dt=(ts-lastTs)/1000;
@@ -548,7 +538,7 @@ function tick(ts){
 
     map.getSource("cursor").setData(turf.point(pos));
 
-    if((camMode==="follow"||camMode==="topdown") && !userOverride){
+    if(camMode==="follow" || camMode==="topdown"){
       const targetCenter=pos;
       const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));
       const targetPitch=camMode==="topdown"?0:75;
