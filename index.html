@@ -225,7 +225,7 @@ const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a
 
 const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
 let currentZoom=START_ZOOM;
-let targetZoom=START_ZOOM;   // for smooth zoom while playing
+let targetZoom=START_ZOOM;
 
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
@@ -296,7 +296,7 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Keep currentZoom in sync with normal zooming */
+/* Keep currentZoom in sync */
 map.on("zoom",()=>{ currentZoom = map.getZoom(); });
 
 /* Zoom buttons */
@@ -466,21 +466,49 @@ map.on("load",async()=>{
       map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
         padding:80,pitch:75,bearing:-20,duration:0
       });
-      // leave currentZoom/targetZoom at START_ZOOM for when play begins
     });
   }
 
   requestAnimationFrame(tick);
 });
 
-/* Play / Pause */
+/* Camera icon helper */
+function camIcons(){
+  return{
+    follow:document.getElementById("iconCamCine"),
+    topdown:document.getElementById("iconCamBird"),
+    free:document.getElementById("iconCamFree")
+  };
+}
+
+/* Play / Pause – now always re-enables follow camera */
 document.getElementById("btnToggle").onclick=()=>{
-  playing=!playing;
+  if(!route) return;       // nothing to play yet
+
+  playing = !playing;
 
   if(playing){
+    // when starting, force follow mode and clear user override
+    camMode = "follow";
+    userOverride = false;
+    camCenter = null;
+    camBearing = null;
+
+    const icons = camIcons();
+    Object.values(icons).forEach(i=>i.classList.remove("active"));
+    icons.follow.classList.add("active");
+
     targetZoom = START_ZOOM;
     currentZoom = START_ZOOM;
-    map.easeTo({ zoom: currentZoom, duration:400 });
+
+    const pos = turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
+    map.easeTo({
+      center:pos,
+      zoom:START_ZOOM,
+      pitch:75,
+      bearing:-20,
+      duration:400
+    });
   }
 
   document.getElementById("iconPlay").classList.toggle("active",!playing);
@@ -494,7 +522,6 @@ document.getElementById("btnRestart").onclick=()=>{
   const startCoord = route.geometry.coordinates[0];
   map.getSource("cursor").setData(turf.point(startCoord));
 
-  // Reset camera smoothing so it re-locks nicely
   camCenter = null;
   camBearing = null;
   userOverride = false;
@@ -504,7 +531,6 @@ document.getElementById("btnRestart").onclick=()=>{
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons.follow.classList.add("active");
 
-  // Start playing from the beginning
   playing = true;
   document.getElementById("iconPlay").classList.remove("active");
   document.getElementById("iconPause").classList.add("active");
@@ -548,15 +574,8 @@ document.getElementById("btnReset").onclick=()=>{
   });
 };
 
-/* Camera modes */
+/* Camera modes button */
 const btnCam=document.getElementById("btnCam");
-function camIcons(){
-  return{
-    follow:document.getElementById("iconCamCine"),
-    topdown:document.getElementById("iconCamBird"),
-    free:document.getElementById("iconCamFree")
-  };
-}
 btnCam.onclick=()=>{
   camMode = camMode==="follow" ? "topdown"
            : camMode==="topdown" ? "free"
@@ -581,7 +600,7 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Let user take control as soon as they click / drag during flyover */
+/* Single click / drag gives user control during flyover */
 ["mousedown","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
     if(playing && (camMode==="follow"||camMode==="topdown")){
@@ -621,7 +640,6 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
-      // smooth zoom towards targetZoom while playing
       const dz = targetZoom - currentZoom;
       const zoomLerp = Math.min(1, 3 * dt);
       currentZoom = currentZoom + dz * zoomLerp;
