@@ -160,7 +160,7 @@
     </svg>
   </button>
 
-  <!-- Layers (Satellite vs OS-style topo overlay) -->
+  <!-- Layers -->
   <button id="btnLayers" class="btn">
     <svg id="iconLayers" class="active" viewBox="0 0 24 24">
       <polygon points="12,3 3,8 12,13 21,8" fill="#fff"/>
@@ -195,7 +195,6 @@
 
 </div>
 
-<!-- JS -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
@@ -206,7 +205,7 @@ mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE
 const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
 
 const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
-let currentZoom=START_ZOOM;   // single source of truth for zoom
+let currentZoom=START_ZOOM;
 
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
@@ -215,7 +214,7 @@ function forceWhite(svg){
   });
 }
 
-/* Replace Free icon with hand.svg from GitHub (NO active class here) */
+/* Free icon from GitHub (no active class) */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg?v="+Date.now());
@@ -232,7 +231,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* Replace Speed icon with fast-forward.svg from GitHub */
+/* Speed icon from GitHub */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v="+Date.now());
@@ -249,7 +248,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* Map: base = satellite-streets (your original) */
+/* Map */
 const map=new mapboxgl.Map({
   container:"map",
   style:"mapbox://styles/mapbox/satellite-streets-v12",
@@ -260,20 +259,28 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Keep currentZoom in sync with any zoom change */
+/* Keep currentZoom in sync */
 map.on("zoom",()=>{ currentZoom = map.getZoom(); });
 
-/* Zoom buttons */
+/* Smooth zoom buttons */
+function smoothZoomTo(z){
+  currentZoom = z;
+  map.easeTo({
+    zoom: currentZoom,
+    duration: 600
+  });
+}
+
 document.getElementById("btnZoomIn").onclick=()=>{
-  currentZoom = Math.min(currentZoom + 0.5, 19);
-  map.setZoom(currentZoom);
+  const target = Math.min(currentZoom + 0.7, 19);
+  smoothZoomTo(target);
 };
 document.getElementById("btnZoomOut").onclick=()=>{
-  currentZoom = Math.max(currentZoom - 0.5, 4);
-  map.setZoom(currentZoom);
+  const target = Math.max(currentZoom - 0.7, 4);
+  smoothZoomTo(target);
 };
 
-/* Fullscreen button */
+/* Fullscreen */
 const btnFull=document.getElementById("btnFull");
 function isFullscreen(){
   return document.fullscreenElement || document.webkitFullscreenElement ||
@@ -294,23 +301,21 @@ btnFull.onclick=()=>{
   }
 };
 
-/* GPX + animation state */
+/* State */
 let route=null,routeLen=0,progress=0,playing=false,camMode="follow",userOverride=false;
 let camCenter=null,camBearing=null,lastTs=0;
 let osVisible=false;
 
-/* Fetch text with fallback */
+/* Helpers */
 async function fetchText(u){
   try{const r=await fetch(u);if(r.ok)return await r.text();}catch(e){}
   try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(u));if(r.ok)return await r.text();}catch(e){}
   return "";
 }
-
 function parseGpx(text){
   const xml=new DOMParser().parseFromString(text,"application/xml");
   return toGeoJSON.gpx(xml).features.find(f=>f.geometry && f.geometry.type==="LineString");
 }
-
 async function addArrow(){
   if(map.hasImage("arrow"))return;
   const c=document.createElement("canvas");
@@ -332,14 +337,12 @@ async function addArrow(){
 
 map.on("load",async()=>{
 
-  /* Terrain + sky */
   map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1"});
   map.setTerrain({source:"mapbox-dem",exaggeration:1});
   map.addLayer({id:"sky",type:"sky",
     paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}
   });
 
-  /* OS-style overlay */
   map.addSource("os-topo",{
     type:"raster",
     tiles:[
@@ -357,7 +360,6 @@ map.on("load",async()=>{
     paint:{"raster-opacity":0}
   });
 
-  /* Route + cursor */
   map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
   map.addLayer({
     id:"route-line",
@@ -402,7 +404,6 @@ map.on("load",async()=>{
     }
   });
 
-  /* Load GPX */
   const text=await fetchText(GPX_URL);
   const line=parseGpx(text);
   if(line){
@@ -436,9 +437,8 @@ document.getElementById("btnToggle").onclick=()=>{
   playing=!playing;
 
   if(playing){
-    // reset to cinematic zoom when flyover starts
     currentZoom = START_ZOOM;
-    map.setZoom(currentZoom);
+    smoothZoomTo(currentZoom);
   }
 
   document.getElementById("iconPlay").classList.toggle("active",!playing);
@@ -464,7 +464,7 @@ btnCam.onclick=()=>{
   if(camMode!=="free") userOverride=false;
 };
 
-/* Layers: toggle OS overlay on/off */
+/* Layers toggle */
 document.getElementById("btnLayers").onclick=()=>{
   osVisible=!osVisible;
   map.setPaintProperty("os-topo-layer","raster-opacity",osVisible?1:0);
@@ -521,7 +521,7 @@ function tick(ts){
         center:camCenter,
         bearing:camBearing,
         pitch:targetPitch,
-        zoom:currentZoom   // animation respects current zoom
+        zoom:currentZoom
       });
     }
   }
