@@ -132,7 +132,7 @@ html,body{
     </svg>
   </button>
 
-  <!-- Reset view (house icon back to original) -->
+  <!-- Reset view (house icon, will be replaced by GitHub SVG) -->
   <button id="btnReset" class="btn">
     <svg id="iconResetView" class="active" viewBox="0 0 24 24">
       <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"
@@ -234,6 +234,7 @@ function forceWhite(svg){
   });
 }
 
+/* FAST FORWARD ICON (speed button) */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -250,6 +251,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
+/* LAYERS ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -262,6 +264,23 @@ function forceWhite(svg){
       svg.style.width="24px";
       svg.style.height="24px";
       document.getElementById("iconLayers").replaceWith(svg);
+    }
+  }catch(e){}
+})();
+
+/* RESET CAMERA VIEW ICON */
+(async()=>{
+  try{
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/reset-camera-view.svg");
+    const t=await r.text();
+    const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+    if(svg){
+      forceWhite(svg);
+      svg.id="iconResetView";
+      svg.classList.add("active");
+      svg.style.width="24px";
+      svg.style.height="24px";
+      document.getElementById("iconResetView").replaceWith(svg);
     }
   }catch(e){}
 })();
