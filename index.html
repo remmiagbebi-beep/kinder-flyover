@@ -52,6 +52,7 @@
     }
     .btn svg.active{ display:block }
 
+    /* Speed icon smaller */
     #iconSpeed{
       width:18px !important;
       height:18px !important;
@@ -122,15 +123,17 @@
     </svg>
   </button>
 
-  <!-- Restart flyover -->
+  <!-- Restart flyover (go back to start, keep play/pause state) -->
   <button id="btnRestart" class="btn">
     <svg id="iconRestart" class="active" viewBox="0 0 24 24">
-      <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-      <path d="M5 9a7 7 0 1 1-1.5 4.3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M5 9a7 7 0 1 1-1.5 4.3" fill="none" stroke="#fff" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"></path>
     </svg>
   </button>
 
-  <!-- Reset view -->
+  <!-- Reset view (back to follow camera at current point) -->
   <button id="btnReset" class="btn">
     <svg id="iconResetView" class="active" viewBox="0 0 24 24">
       <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" fill="#fff"></path>
@@ -139,11 +142,13 @@
 
   <!-- Camera mode -->
   <button id="btnCam" class="btn">
+    <!-- Cinematic -->
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
       <polygon points="16,10 22,7.5 22,16.5 16,14"></polygon>
     </svg>
 
+    <!-- Top-down bird -->
     <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg"
          viewBox="4.3333375 6.3333375 43.875 40.375"
          style="transform:translate(1px,1px)">
@@ -154,6 +159,7 @@
         c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z"></path>
     </svg>
 
+    <!-- Free (hand icon will be injected) -->
     <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
   </button>
 </div>
@@ -223,9 +229,10 @@ mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE
 
 const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
 
-const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
-let currentZoom=START_ZOOM;
-let targetZoom=START_ZOOM;
+const START_ZOOM=15.7,
+      CENTER_SMOOTH=0.06,
+      MAX_TURN_RATE=4,
+      STEP_KM=0.02;
 
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
@@ -234,7 +241,7 @@ function forceWhite(svg){
   });
 }
 
-/* Free (hand) icon from GitHub */
+/* Load hand (free) icon */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg");
@@ -251,7 +258,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* Speed icon from GitHub */
+/* Load speed (fast forward) icon */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -268,7 +275,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* Layers icon from GitHub */
+/* Load layers icon */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -296,27 +303,12 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Keep currentZoom in sync */
-map.on("zoom",()=>{ currentZoom = map.getZoom(); });
-
-/* Zoom buttons */
+/* Simple zoom buttons */
 document.getElementById("btnZoomIn").onclick=()=>{
-  const z = Math.min(currentZoom + 0.7, 19);
-  if(playing){
-    targetZoom = z;
-  }else{
-    currentZoom = z;
-    map.easeTo({ zoom: currentZoom, duration:600 });
-  }
+  map.easeTo({ zoom: map.getZoom()+0.7, duration:600 });
 };
 document.getElementById("btnZoomOut").onclick=()=>{
-  const z = Math.max(currentZoom - 0.7, 4);
-  if(playing){
-    targetZoom = z;
-  }else{
-    currentZoom = z;
-    map.easeTo({ zoom: currentZoom, duration:600 });
-  }
+  map.easeTo({ zoom: map.getZoom()-0.7, duration:600 });
 };
 
 /* Fullscreen */
@@ -353,7 +345,7 @@ async function fetchText(u){
 }
 function parseGpx(text){
   const xml=new DOMParser().parseFromString(text,"application/xml");
-  return toGeoJSON.gpx(xml).features.find(f=>f.geometry && f.geometry.type==="LineString");
+  return toGeoJSON.gpx(xml).features.find(f=>f.geometry?.type==="LineString");
 }
 async function addArrow(){
   if(map.hasImage("arrow"))return;
@@ -376,6 +368,7 @@ async function addArrow(){
 
 map.on("load",async()=>{
 
+  /* Terrain & sky */
   map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1"});
   map.setTerrain({source:"mapbox-dem",exaggeration:1});
   map.addLayer({id:"sky",type:"sky",
@@ -401,6 +394,7 @@ map.on("load",async()=>{
     paint:{}
   });
 
+  /* Route + cursor */
   map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
   map.addLayer({
     id:"route-line",
@@ -439,21 +433,20 @@ map.on("load",async()=>{
     source:"cursor",
     paint:{
       "circle-radius":6,
-      "circle-color":"#ffffff",
+      "circle-color":"#fff",
       "circle-stroke-width":3,
       "circle-stroke-color":"#EC2629"
     }
   });
 
+  /* Load GPX and build resampled route */
   const text=await fetchText(GPX_URL);
   const line=parseGpx(text);
   if(line){
     const len=turf.length(line,{units:"kilometers"});
     const pts=[];
     for(let d=0;d<=len;d+=STEP_KM){
-      pts.push(
-        turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates
-      );
+      pts.push(turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates);
     }
     route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};
     routeLen=len;
@@ -472,7 +465,33 @@ map.on("load",async()=>{
   requestAnimationFrame(tick);
 });
 
-/* Camera icon helper */
+/* Buttons */
+document.getElementById("btnToggle").onclick=()=>{
+  playing=!playing;
+  document.getElementById("iconPlay").classList.toggle("active",!playing);
+  document.getElementById("iconPause").classList.toggle("active",playing);
+};
+
+document.getElementById("btnRestart").onclick=()=>{
+  if(!route) return;
+  progress=0;
+  const startCoord=route.geometry.coordinates[0];
+  map.getSource("cursor").setData(turf.point(startCoord));
+  camCenter=null;
+  camBearing=null;
+};
+
+document.getElementById("btnReset").onclick=()=>{
+  if(!route) return;
+  userOverride=false;
+  camMode="follow";
+  camCenter=null;
+  camBearing=null;
+  const icons=camIcons();
+  Object.values(icons).forEach(i=>i.classList.remove("active"));
+  icons.follow.classList.add("active");
+};
+
 function camIcons(){
   return{
     follow:document.getElementById("iconCamCine"),
@@ -481,95 +500,9 @@ function camIcons(){
   };
 }
 
-/* Play / Pause – re-enables follow and clears override */
-document.getElementById("btnToggle").onclick=()=>{
-  if(!route) return;
-
-  playing = !playing;
-
-  if(playing){
-    camMode = "follow";
-    userOverride = false;
-    camCenter = null;
-    camBearing = null;
-
-    const icons = camIcons();
-    Object.values(icons).forEach(i=>i.classList.remove("active"));
-    icons.follow.classList.add("active");
-
-    targetZoom = START_ZOOM;
-    currentZoom = START_ZOOM;
-  }
-
-  document.getElementById("iconPlay").classList.toggle("active",!playing);
-  document.getElementById("iconPause").classList.toggle("active",playing);
-};
-
-/* Restart flyover */
-document.getElementById("btnRestart").onclick=()=>{
-  if(!route) return;
-  progress = 0;
-  const startCoord = route.geometry.coordinates[0];
-  map.getSource("cursor").setData(turf.point(startCoord));
-
-  camCenter = null;
-  camBearing = null;
-  userOverride = false;
-  camMode = "follow";
-
-  const icons = camIcons();
-  Object.values(icons).forEach(i=>i.classList.remove("active"));
-  icons.follow.classList.add("active");
-
-  playing = true;
-  document.getElementById("iconPlay").classList.remove("active");
-  document.getElementById("iconPause").classList.add("active");
-
-  targetZoom = START_ZOOM;
-  currentZoom = START_ZOOM;
-
-  map.easeTo({
-    center:startCoord,
-    zoom:START_ZOOM,
-    pitch:75,
-    bearing:-20,
-    duration:400
-  });
-};
-
-/* Reset view */
-document.getElementById("btnReset").onclick=()=>{
-  if(!route) return;
-
-  userOverride = false;
-  camMode = "follow";
-
-  const icons = camIcons();
-  Object.values(icons).forEach(i=>i.classList.remove("active"));
-  icons.follow.classList.add("active");
-
-  camCenter = null;
-  camBearing = null;
-
-  const pos = turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
-  targetZoom = START_ZOOM;
-  currentZoom = START_ZOOM;
-
-  map.easeTo({
-    center:pos,
-    zoom:START_ZOOM,
-    pitch:75,
-    bearing:-20,
-    duration:400
-  });
-};
-
-/* Camera modes button */
 const btnCam=document.getElementById("btnCam");
 btnCam.onclick=()=>{
-  camMode = camMode==="follow" ? "topdown"
-           : camMode==="topdown" ? "free"
-           : "follow";
+  camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
   const icons=camIcons();
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons[camMode].classList.add("active");
@@ -582,7 +515,7 @@ document.getElementById("btnLayers").onclick=()=>{
   map.setLayoutProperty("os-topo-layer","visibility",osVisible?"visible":"none");
 };
 
-/* Speed slider */
+/* Speed button + slider */
 const speedWrap=document.getElementById("speedWrap");
 document.getElementById("btnSpeed").onclick=e=>{
   e.stopPropagation();
@@ -590,16 +523,16 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* User takes control only when actually manipulating the map */
-["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+/* User takes control as soon as they interact with the map */
+["mousedown","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
-    if(playing && (camMode==="follow"||camMode==="topdown")){
-      userOverride = true;
+    if((camMode==="follow"||camMode==="topdown") && playing){
+      userOverride=true;
     }
   });
 });
 
-/* Animation */
+/* Animation loop – this is your original working logic */
 function tick(ts){
   if(!lastTs) lastTs=ts;
   const dt=(ts-lastTs)/1000;
@@ -630,15 +563,11 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
-      const dz = targetZoom - currentZoom;
-      const zoomLerp = Math.min(1, 3 * dt);
-      currentZoom = currentZoom + dz * zoomLerp;
-
       map.jumpTo({
         center:camCenter,
         bearing:camBearing,
         pitch:targetPitch,
-        zoom:currentZoom
+        zoom:START_ZOOM
       });
     }
   }
