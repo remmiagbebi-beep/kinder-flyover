@@ -122,7 +122,7 @@
     </svg>
   </button>
 
-  <!-- Restart flyover (go back to start and play) -->
+  <!-- Restart flyover -->
   <button id="btnRestart" class="btn">
     <svg id="iconRestart" class="active" viewBox="0 0 24 24">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -130,7 +130,7 @@
     </svg>
   </button>
 
-  <!-- Reset view (back to cinematic follow at current point) -->
+  <!-- Reset view -->
   <button id="btnReset" class="btn">
     <svg id="iconResetView" class="active" viewBox="0 0 24 24">
       <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z" fill="#fff"></path>
@@ -481,14 +481,13 @@ function camIcons(){
   };
 }
 
-/* Play / Pause – now always re-enables follow camera */
+/* Play / Pause – re-enables follow and clears override */
 document.getElementById("btnToggle").onclick=()=>{
-  if(!route) return;       // nothing to play yet
+  if(!route) return;
 
   playing = !playing;
 
   if(playing){
-    // when starting, force follow mode and clear user override
     camMode = "follow";
     userOverride = false;
     camCenter = null;
@@ -500,22 +499,13 @@ document.getElementById("btnToggle").onclick=()=>{
 
     targetZoom = START_ZOOM;
     currentZoom = START_ZOOM;
-
-    const pos = turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
-    map.easeTo({
-      center:pos,
-      zoom:START_ZOOM,
-      pitch:75,
-      bearing:-20,
-      duration:400
-    });
   }
 
   document.getElementById("iconPlay").classList.toggle("active",!playing);
   document.getElementById("iconPause").classList.toggle("active",playing);
 };
 
-/* Restart flyover: go back to start and start playing */
+/* Restart flyover */
 document.getElementById("btnRestart").onclick=()=>{
   if(!route) return;
   progress = 0;
@@ -547,7 +537,7 @@ document.getElementById("btnRestart").onclick=()=>{
   });
 };
 
-/* Reset view: go back to cinematic follow at current progress */
+/* Reset view */
 document.getElementById("btnReset").onclick=()=>{
   if(!route) return;
 
@@ -600,8 +590,8 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Single click / drag gives user control during flyover */
-["mousedown","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+/* User takes control only when actually manipulating the map */
+["dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
     if(playing && (camMode==="follow"||camMode==="topdown")){
       userOverride = true;
