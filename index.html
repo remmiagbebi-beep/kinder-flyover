@@ -122,7 +122,7 @@
     </svg>
   </button>
 
-  <!-- Restart Flyover -->
+  <!-- Restart -->
   <button id="btnRestart" class="btn">
     <svg id="iconRestart" class="active" viewBox="0 0 24 24" style="transform:translateX(2px)">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
@@ -132,9 +132,9 @@
     </svg>
   </button>
 
-  <!-- Reset View (house removed, placeholder SVG) -->
+  <!-- Reset View (CORRECT PLACEHOLDER) -->
   <button id="btnReset" class="btn">
-    <svg id="iconResetView" class="active"></svg>
+    <svg id="iconResetView"></svg>
   </button>
 
   <!-- Camera Mode -->
@@ -161,14 +161,10 @@
 
   <button id="btnFull" class="btn">
     <svg id="iconFull" class="active" viewBox="0 0 24 24">
-      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"></polyline>
+      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"></polyline>
+      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"></polyline>
+      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"></polyline>
     </svg>
   </button>
 
@@ -214,7 +210,7 @@
 <script>
 mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
 
-const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
+const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19הfa.gpx";
 
 const START_ZOOM=15.7,
       CENTER_SMOOTH=0.06,
@@ -231,7 +227,6 @@ function forceWhite(svg){
   });
 }
 
-/* FAST FORWARD ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -248,7 +243,6 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* LAYERS ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -265,12 +259,13 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* RESET CAMERA VIEW ICON — FIXED VERSION */
+/* RESET CAMERA VIEW ICON — FULLY FIXED */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/reset-camera-view.svg");
     const t=await r.text();
     const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+
     if(svg){
       forceWhite(svg);
       svg.id="iconResetView";
@@ -280,7 +275,6 @@ function forceWhite(svg){
       const old = document.getElementById("iconResetView");
       old.replaceWith(svg);
 
-      // FIX: ensure visible
       svg.classList.add("active");
     }
   }catch(e){}
