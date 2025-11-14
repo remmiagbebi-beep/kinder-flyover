@@ -233,6 +233,10 @@ const START_ZOOM=15.7,
       MAX_TURN_RATE=4,
       STEP_KM=0.02;
 
+/* smooth zoom state for flyover */
+let currentZoom = START_ZOOM;
+let targetZoom  = START_ZOOM;
+
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
     if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff");
@@ -301,35 +305,6 @@ const map=new mapboxgl.Map({
   bearing:-20,
   antialias:true
 });
-
-/* Zoom buttons */
-document.getElementById("btnZoomIn").onclick=()=>{
-  map.easeTo({ zoom: map.getZoom()+0.7, duration:600 });
-};
-document.getElementById("btnZoomOut").onclick=()=>{
-  map.easeTo({ zoom: map.getZoom()-0.7, duration:600 });
-};
-
-/* Fullscreen */
-const btnFull=document.getElementById("btnFull");
-function isFullscreen(){
-  return document.fullscreenElement || document.webkitFullscreenElement ||
-         document.mozFullScreenElement || document.msFullscreenElement;
-}
-btnFull.onclick=()=>{
-  if(!isFullscreen()){
-    const el=document.documentElement;
-    if(el.requestFullscreen) el.requestFullscreen();
-    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
-    else if(el.msRequestFullscreen) el.msRequestFullscreen();
-  }else{
-    if(document.exitFullscreen) document.exitFullscreen();
-    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
-    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
-    else if(document.msExitFullscreen) document.msExitFullscreen();
-  }
-};
 
 /* State */
 let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
@@ -466,9 +441,25 @@ map.on("load",async()=>{
   requestAnimationFrame(tick);
 });
 
+/* Icons helper */
+function camIcons(){
+  return{
+    follow:document.getElementById("iconCamCine"),
+    topdown:document.getElementById("iconCamBird"),
+    free:document.getElementById("iconCamFree")
+  };
+}
+
 /* Buttons */
 document.getElementById("btnToggle").onclick=()=>{
   playing=!playing;
+
+  if(playing){
+    // when starting, lock current zoom as base for smooth zoom
+    currentZoom = map.getZoom();
+    targetZoom  = currentZoom;
+  }
+
   document.getElementById("iconPlay").classList.toggle("active",!playing);
   document.getElementById("iconPause").classList.toggle("active",playing);
 };
@@ -480,6 +471,10 @@ document.getElementById("btnRestart").onclick=()=>{
   map.getSource("cursor").setData(turf.point(startCoord));
   camCenter=null;
   camBearing=null;
+
+  // keep whatever zoom is currently on
+  currentZoom = map.getZoom();
+  targetZoom  = currentZoom;
 };
 
 document.getElementById("btnReset").onclick=()=>{
@@ -490,15 +485,11 @@ document.getElementById("btnReset").onclick=()=>{
   const icons=camIcons();
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons.follow.classList.add("active");
-};
 
-function camIcons(){
-  return{
-    follow:document.getElementById("iconCamCine"),
-    topdown:document.getElementById("iconCamBird"),
-    free:document.getElementById("iconCamFree")
-  };
-}
+  // reset zoom to cinematic base
+  currentZoom = map.getZoom();
+  targetZoom  = currentZoom;
+};
 
 const btnCam=document.getElementById("btnCam");
 btnCam.onclick=()=>{
@@ -522,7 +513,58 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Animation loop – always follows when in follow/topdown */
+/* Fullscreen */
+const btnFull=document.getElementById("btnFull");
+function isFullscreen(){
+  return document.fullscreenElement || document.webkitFullscreenElement ||
+         document.mozFullScreenElement || document.msFullscreenElement;
+}
+btnFull.onclick=()=>{
+  if(!isFullscreen()){
+    const el=document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  }else{
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
+  }
+};
+
+/* Zoom buttons – smooth when playing, normal when paused */
+document.getElementById("btnZoomIn").onclick=()=>{
+  const delta=0.7;
+  if(playing && (camMode==="follow"||camMode==="topdown")){
+    targetZoom = Math.min(targetZoom + delta, 19);
+  }else{
+    map.easeTo({ zoom: map.getZoom()+delta, duration:600 });
+  }
+};
+document.getElementById("btnZoomOut").onclick=()=>{
+  const delta=0.7;
+  if(playing && (camMode==="follow"||camMode==="topdown")){
+    targetZoom = Math.max(targetZoom - delta, 4);
+  }else{
+    map.easeTo({ zoom: map.getZoom()-delta, duration:600 });
+  }
+};
+
+/* Take control: any map interaction during flyover switches to Free */
+["mousedown","touchstart","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+  map.on(ev,e=>{
+    if(playing && (camMode==="follow"||camMode==="topdown")){
+      camMode="free";
+      const icons=camIcons();
+      Object.values(icons).forEach(i=>i.classList.remove("active"));
+      icons.free.classList.add("active");
+    }
+  });
+});
+
+/* Animation loop – camera follows in follow/topdown and uses smooth zoom */
 function tick(ts){
   if(!lastTs) lastTs=ts;
   const dt=(ts-lastTs)/1000;
@@ -553,11 +595,16 @@ function tick(ts){
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
 
+      // smooth zoom towards targetZoom
+      const dz = targetZoom - currentZoom;
+      const zoomLerp = Math.min(1, 3*dt);
+      currentZoom = currentZoom + dz*zoomLerp;
+
       map.jumpTo({
         center:camCenter,
         bearing:camBearing,
         pitch:targetPitch,
-        zoom:START_ZOOM
+        zoom:currentZoom
       });
     }
   }
