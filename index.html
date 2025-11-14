@@ -108,8 +108,10 @@
 <body>
 <div id="map"></div>
 
+<!-- LEFT SIDE: play / restart / reset / camera -->
 <div class="ui ui-left">
 
+  <!-- Play / Pause -->
   <button id="btnToggle" class="btn">
     <svg id="iconPlay"  class="active" viewBox="0 0 24 24">
       <polygon transform="translate(1,0)" points="5,3 19,12 5,21"></polygon>
@@ -120,8 +122,9 @@
     </svg>
   </button>
 
+  <!-- Restart flyover (icon moved 2px right) -->
   <button id="btnRestart" class="btn">
-    <svg id="iconRestart" class="active" viewBox="0 0 24 24">
+    <svg id="iconRestart" class="active" viewBox="0 0 24 24" style="transform:translateX(2px)">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"></path>
       <path d="M5 9a7 7 0 1 1-1.5 4.3" fill="none" stroke="#fff" stroke-width="2"
@@ -129,15 +132,15 @@
     </svg>
   </button>
 
+  <!-- Reset view (house icon back to original) -->
   <button id="btnReset" class="btn">
-    <svg id="iconResetView" class="active"
-         viewBox="0 0 24 24"
-         style="transform:translateX(2px)">
+    <svg id="iconResetView" class="active" viewBox="0 0 24 24">
       <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"
             fill="#fff"></path>
     </svg>
   </button>
 
+  <!-- Camera mode (cinematic / top-down) -->
   <button id="btnCam" class="btn">
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
@@ -156,6 +159,7 @@
   </button>
 </div>
 
+<!-- RIGHT SIDE: fullscreen / zoom / layers / speed -->
 <div class="ui ui-right">
 
   <button id="btnFull" class="btn">
@@ -211,9 +215,6 @@
 <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
 
 <script>
-/* THE ENTIRE JS IS IDENTICAL TO THE PREVIOUS WORKING VERSION — NO CHANGES MADE */
-/* Only the SVG shift was added above */
-
 mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
 
 const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
