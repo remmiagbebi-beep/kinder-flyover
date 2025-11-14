@@ -113,7 +113,7 @@
 
   <!-- Play / Pause -->
   <button id="btnToggle" class="btn">
-    <svg id="iconPlay"  class="active" viewBox="0 0 24 24">
+    <svg id="iconPlay" class="active" viewBox="0 0 24 24">
       <polygon transform="translate(1,0)" points="5,3 19,12 5,21"></polygon>
     </svg>
     <svg id="iconPause" viewBox="0 0 24 24">
@@ -132,7 +132,7 @@
     </svg>
   </button>
 
-  <!-- Reset View (house removed, placeholder for replacement) -->
+  <!-- Reset View (house removed, placeholder SVG) -->
   <button id="btnReset" class="btn">
     <svg id="iconResetView" class="active"></svg>
   </button>
@@ -265,7 +265,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* RESET CAMERA VIEW ICON — replaces house completely */
+/* RESET CAMERA VIEW ICON — FIXED VERSION */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/reset-camera-view.svg");
@@ -274,10 +274,14 @@ function forceWhite(svg){
     if(svg){
       forceWhite(svg);
       svg.id="iconResetView";
-      svg.classList.add("active");
       svg.style.width="24px";
       svg.style.height="24px";
-      document.getElementById("iconResetView").replaceWith(svg);
+
+      const old = document.getElementById("iconResetView");
+      old.replaceWith(svg);
+
+      // FIX: ensure visible
+      svg.classList.add("active");
     }
   }catch(e){}
 })();
