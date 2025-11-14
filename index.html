@@ -577,10 +577,9 @@ document.getElementById("btnZoomOut").onclick=()=>{
   }
 };
 
-/* Take control: ONLY user-originated interaction sets userOverride */
+/* Take control: any actual interaction during flyover sets userOverride=true but keeps camMode */
 ["mousedown","touchstart","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
   map.on(ev,e=>{
-    if(!e.originalEvent) return;              // <-- critical fix
     if(playing && (camMode==="follow"||camMode==="topdown")){
       userOverride=true;
     }
