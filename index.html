@@ -130,7 +130,7 @@ html,body{
   </button>
 
     <button id="btnReset" class="btn">
-    <svg id="iconResetView" class="active"></svg>
+        <svg id="iconResetView" class="active"></svg>
   </button>
 
     <button id="btnCam" class="btn">
@@ -225,7 +225,6 @@ function forceWhite(svg){
   });
 }
 
-// Loads the fast-forward icon for speed
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -242,7 +241,6 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-// Loads the layers icon
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -259,7 +257,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-// --- NEW BLOCK: Loads the reset-camera-view icon ---
+// --- NEW BLOCK ADDED ONLY FOR THE reset-camera-view.svg ICON ---
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/reset-camera-view.svg");
@@ -277,7 +275,7 @@ function forceWhite(svg){
     console.error("Could not load reset-camera-view.svg:", e);
   }
 })();
-// ----------------------------------------------------
+// ---------------------------------------------------------------
 
 const map=new mapboxgl.Map({
   container:"map",
