@@ -140,7 +140,7 @@
     </svg>
   </button>
 
-  <!-- Camera mode -->
+  <!-- Camera mode (Cinematic / Top-down only) -->
   <button id="btnCam" class="btn">
     <!-- Cinematic -->
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
@@ -158,9 +158,6 @@
         c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603
         c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z"></path>
     </svg>
-
-    <!-- Free (hand icon will be injected) -->
-    <svg id="iconCamFree" viewBox="0 0 24 24"></svg>
   </button>
 </div>
 
@@ -244,23 +241,6 @@ function forceWhite(svg){
     if(n.hasAttribute("stroke")) n.setAttribute("stroke","#fff");
   });
 }
-
-/* Load hand (free) icon */
-(async()=>{
-  try{
-    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg");
-    const t=await r.text();
-    const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
-    if(svg){
-      forceWhite(svg);
-      svg.id="iconCamFree";
-      svg.style.width="24px";
-      svg.style.height="24px";
-      svg.style.transform="translate(2px,0)";
-      document.getElementById("iconCamFree").replaceWith(svg);
-    }
-  }catch(e){}
-})();
 
 /* Load speed (fast forward) icon */
 (async()=>{
@@ -450,8 +430,7 @@ map.on("load",async()=>{
 function camIcons(){
   return{
     follow:document.getElementById("iconCamCine"),
-    topdown:document.getElementById("iconCamBird"),
-    free:document.getElementById("iconCamFree")
+    topdown:document.getElementById("iconCamBird")
   };
 }
 
@@ -500,22 +479,18 @@ document.getElementById("btnReset").onclick=()=>{
 
 const btnCam=document.getElementById("btnCam");
 btnCam.onclick=()=>{
-  camMode=camMode==="follow"?"topdown":camMode==="topdown"?"free":"follow";
+  /* toggle only between follow and topdown */
+  camMode = (camMode === "follow") ? "topdown" : "follow";
   const icons=camIcons();
   Object.values(icons).forEach(i=>i.classList.remove("active"));
   icons[camMode].classList.add("active");
 
-  if(camMode==="free"){
-    /* free = user in charge */
-    userOverride=true;
-  }else{
-    /* follow/topdown via button = re-enable autopilot at base zoom */
-    userOverride=false;
-    camCenter=null;
-    camBearing=null;
-    currentZoom = START_ZOOM;
-    targetZoom  = START_ZOOM;
-  }
+  /* switching mode via button re-enables autopilot at base zoom */
+  userOverride=false;
+  camCenter=null;
+  camBearing=null;
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
 };
 
 /* Layers toggle */
