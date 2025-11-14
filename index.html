@@ -51,7 +51,6 @@
     }
     .btn svg.active{ display:block }
 
-    /* Speed button icon smaller */
     #iconSpeed{
       width:18px !important;
       height:18px !important;
@@ -206,6 +205,7 @@ const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a
 
 const START_ZOOM=15.7, CENTER_SMOOTH=0.06, MAX_TURN_RATE=4, STEP_KM=0.02;
 let currentZoom=START_ZOOM;
+let targetZoom=START_ZOOM;   // used for smooth zoom while playing
 
 function forceWhite(svg){
   svg.querySelectorAll("*").forEach(n=>{
@@ -214,10 +214,10 @@ function forceWhite(svg){
   });
 }
 
-/* Free icon from GitHub (no active class) */
+/* Free icon from GitHub (cached) */
 (async()=>{
   try{
-    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg?v="+Date.now());
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/hand.svg");
     const t=await r.text();
     const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
     if(svg){
@@ -231,10 +231,10 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* Speed icon from GitHub */
+/* Speed icon from GitHub (cached) */
 (async()=>{
   try{
-    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg?v="+Date.now());
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
     const t=await r.text();
     const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
     if(svg){
@@ -259,25 +259,30 @@ const map=new mapboxgl.Map({
   antialias:true
 });
 
-/* Keep currentZoom in sync */
+/* Keep currentZoom in sync with any zoom (wheel etc) */
 map.on("zoom",()=>{ currentZoom = map.getZoom(); });
 
-/* Smooth zoom buttons */
-function smoothZoomTo(z){
-  currentZoom = z;
-  map.easeTo({
-    zoom: currentZoom,
-    duration: 600
-  });
-}
-
+/* Zoom buttons:
+   - if NOT playing: use Mapbox easeTo (smooth)
+   - if playing: only change targetZoom, tick() will ease it smoothly
+*/
 document.getElementById("btnZoomIn").onclick=()=>{
   const target = Math.min(currentZoom + 0.7, 19);
-  smoothZoomTo(target);
+  if(playing){
+    targetZoom = target;
+  }else{
+    currentZoom = target;
+    map.easeTo({ zoom: currentZoom, duration: 600 });
+  }
 };
 document.getElementById("btnZoomOut").onclick=()=>{
   const target = Math.max(currentZoom - 0.7, 4);
-  smoothZoomTo(target);
+  if(playing){
+    targetZoom = target;
+  }else{
+    currentZoom = target;
+    map.easeTo({ zoom: currentZoom, duration: 600 });
+  }
 };
 
 /* Fullscreen */
@@ -343,6 +348,7 @@ map.on("load",async()=>{
     paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}
   });
 
+  /* OS topo source + hidden layer */
   map.addSource("os-topo",{
     type:"raster",
     tiles:[
@@ -357,7 +363,8 @@ map.on("load",async()=>{
     id:"os-topo-layer",
     type:"raster",
     source:"os-topo",
-    paint:{"raster-opacity":0}
+    layout:{ visibility:"none" },
+    paint:{}
   });
 
   map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
@@ -425,7 +432,7 @@ map.on("load",async()=>{
       map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
         padding:80,pitch:75,bearing:-20,duration:0
       });
-      // keep currentZoom as START_ZOOM for when play begins
+      // we leave currentZoom/targetZoom as START_ZOOM for when play begins
     });
   }
 
@@ -437,8 +444,10 @@ document.getElementById("btnToggle").onclick=()=>{
   playing=!playing;
 
   if(playing){
+    // when flythrough starts, jump zoom back towards cinematic zoom
+    targetZoom = START_ZOOM;
     currentZoom = START_ZOOM;
-    smoothZoomTo(currentZoom);
+    map.easeTo({ zoom: currentZoom, duration: 400 });
   }
 
   document.getElementById("iconPlay").classList.toggle("active",!playing);
@@ -467,7 +476,7 @@ btnCam.onclick=()=>{
 /* Layers toggle */
 document.getElementById("btnLayers").onclick=()=>{
   osVisible=!osVisible;
-  map.setPaintProperty("os-topo-layer","raster-opacity",osVisible?1:0);
+  map.setLayoutProperty("os-topo-layer","visibility",osVisible?"visible":"none");
 };
 
 /* Speed slider */
@@ -516,6 +525,11 @@ function tick(ts){
         camCenter[0]+(targetCenter[0]-camCenter[0])*CENTER_SMOOTH,
         camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
       ];
+
+      // smooth zoom towards targetZoom while playing
+      const dz = targetZoom - currentZoom;
+      const zoomLerp = Math.min(1, 3 * dt); // higher = faster
+      currentZoom = currentZoom + dz * zoomLerp;
 
       map.jumpTo({
         center:camCenter,
