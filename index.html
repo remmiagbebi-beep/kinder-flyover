@@ -1,128 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Kinder Scout 3D Flyover</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
+<meta charset="utf-8" />
+<title>Kinder Scout 3D Flyover</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
 
-  <style>
-    html,body{
-      margin:0;
-      height:100%;
-      background:#000;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
-    }
-    #map{ position:absolute; inset:0 }
+<style>
+html,body{
+  margin:0;
+  height:100%;
+  background:#000;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
+}
+#map{ position:absolute; inset:0 }
 
-    .ui{
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-      z-index:10;
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-    }
-    .ui-right{ right:20px; }
-    .ui-left{ left:20px; }
+.ui{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.ui-right{ right:20px; }
+.ui-left{ left:20px; }
 
-    .btn{
-      width:50px;
-      height:50px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border:3px solid #fff;
-      cursor:pointer;
-      background:linear-gradient(180deg,#EC2629,#b51d20);
-      box-shadow:0 3px 10px rgba(0,0,0,.35);
-      transition:.15s;
-    }
-    .btn:hover{
-      background:linear-gradient(180deg,#3899EC,#297fc8);
-    }
+.btn{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:3px solid #fff;
+  cursor:pointer;
+  background:linear-gradient(180deg,#EC2629,#b51d20);
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
+  transition:.15s;
+}
+.btn:hover{
+  background:linear-gradient(180deg,#3899EC,#297fc8);
+}
 
-    .btn svg{
-      fill:#fff;
-      width:24px;
-      height:24px;
-      display:block;
-    }
+.btn svg{
+  fill:#fff;
+  width:24px;
+  height:24px;
+  display:none;
+}
+.btn svg.active{ display:block }
 
-    #iconSpeed{
-      width:18px !important;
-      height:18px !important;
-    }
+#iconSpeed{
+  width:18px !important;
+  height:18px !important;
+}
 
-    .speed-wrap{ position:relative; width:50px; height:50px }
+.speed-wrap{ position:relative; width:50px; height:50px }
 
-    .speed-panel{
-      position:absolute;
-      top:50%;
-      right:60px;
-      transform:translateY(-50%) scale(.98);
-      opacity:0;
-      pointer-events:none;
-      width:230px;
-      height:45px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:0 10px;
-      border-radius:9999px;
-      border:3px solid #fff;
-      background:linear-gradient(180deg,#EC2629,#b51d20);
-      transition:opacity .18s,transform .18s;
-      box-shadow:0 3px 10px rgba(0,0,0,.35);
-    }
-    .speed-wrap.open .speed-panel{
-      opacity:1;
-      transform:translateY(-50%) scale(1);
-      pointer-events:auto;
-    }
+.speed-panel{
+  position:absolute;
+  top:50%;
+  right:60px;
+  transform:translateY(-50%) scale(.98);
+  opacity:0;
+  pointer-events:none;
+  width:230px;
+  height:45px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 10px;
+  border-radius:9999px;
+  border:3px solid #fff;
+  background:linear-gradient(180deg,#EC2629,#b51d20);
+  transition:opacity .18s,transform .18s;
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
+}
+.speed-wrap.open .speed-panel{
+  opacity:1;
+  transform:translateY(-50%) scale(1);
+  pointer-events:auto;
+}
 
-    .speed-slider{
-      flex:1;
-      appearance:none;
-      height:6px;
-      border-radius:999px;
-      background:linear-gradient(90deg,#fff,#fff8);
-    }
-    .speed-slider::-webkit-slider-thumb{
-      appearance:none;
-      width:18px;
-      height:18px;
-      border-radius:50%;
-      background:#fff;
-      border:2px solid #EC2629;
-      box-shadow:0 2px 8px rgba(0,0,0,.25);
-      cursor:pointer;
-    }
-  </style>
+.speed-slider{
+  flex:1;
+  appearance:none;
+  height:6px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#fff,#fff8);
+  outline:none;
+}
+.speed-slider::-webkit-slider-thumb{
+  appearance:none;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#fff;
+  border:2px solid #EC2629;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 <div id="map"></div>
 
-<!-- LEFT SIDE -->
+<!-- LEFT SIDE: play / restart / reset / camera -->
 <div class="ui ui-left">
 
   <!-- Play / Pause -->
   <button id="btnToggle" class="btn">
-    <svg id="iconPlay" viewBox="0 0 24 24">
+    <svg id="iconPlay" class="active" viewBox="0 0 24 24">
       <polygon transform="translate(1,0)" points="5,3 19,12 5,21"></polygon>
     </svg>
-    <svg id="iconPause" viewBox="0 0 24 24" style="display:none">
+    <svg id="iconPause" viewBox="0 0 24 24">
       <rect x="6" y="4" width="5" height="16" rx="1.5"></rect>
       <rect x="13" y="4" width="5" height="16" rx="1.5"></rect>
     </svg>
   </button>
 
-  <!-- Restart -->
+  <!-- Restart flyover (icon moved 2px right) -->
   <button id="btnRestart" class="btn">
-    <svg id="iconRestart" viewBox="0 0 24 24" style="transform:translateX(2px)">
+    <svg id="iconRestart" class="active" viewBox="0 0 24 24" style="transform:translateX(2px)">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"></path>
       <path d="M5 9a7 7 0 1 1-1.5 4.3" fill="none" stroke="#fff" stroke-width="2"
@@ -130,59 +132,51 @@
     </svg>
   </button>
 
-  <!-- Reset View (INLINE SVG – ALWAYS WORKS) -->
+  <!-- Reset view (house icon back to original) -->
   <button id="btnReset" class="btn">
-    <svg id="iconResetView" viewBox="0 0 512 512" style="width:24px;height:24px">
-      <path d="M319.63,191.33l-5.34-19.8c-1.88-6.98-8.22-11.83-15.45-11.83h-88.12c-7.23,0-13.56,4.85-15.45,11.83l-5.34,19.8h-38.06
-      c-8.84,0-16,7.16-16,16V336.3c0,8.84,7.16,16,16,16h205.81c8.84,0,16-7.16,16-16V207.33c0-8.84-7.16-16-16-16H319.63z
-      M341.68,320.3H167.88v-96.97h34.31c7.23,0,13.56-4.85,15.45-11.83l5.34-19.8h63.61l5.34,19.8c1.88,6.98,8.22,11.83,15.45,11.83
-      h34.31V320.3z" fill="#fff"/>
-
-      <path d="M254.78,217.5c-25.61,0-46.45,20.84-46.45,46.45s20.84,46.45,46.45,46.45s46.45-20.84,46.45-46.45
-      S280.39,217.5,254.78,217.5z M254.78,278.4c-7.97,0-14.45-6.48-14.45-14.45s6.48-14.45,14.45-14.45s14.45,6.48,14.45,14.45
-      S262.75,278.4,254.78,278.4z" fill="#fff"/>
-
-      <path d="M46.29,265.58c4.7,4.58,8.76,8.54,15.63,8.65c4.24,0,8.36-1.7,11.36-4.7l29.43-29.43l-21.56-21.56
-      c17.24-79.88,88.43-139.92,173.39-139.92c67.45,0,128.2,37.45,158.54,97.74c3.97,7.89,13.59,11.07,21.49,7.1
-      c7.89-3.97,11.07-13.59,7.1-21.49c-33.31-20.96-71.82-32.03-111.35-32.03c-103.76,0-190.11,75.87-206.55,175.03
-      c-6.06-6.43-16.19-6.73-22.62-0.67c-6.43,6.06-6.73,16.19-0.67,22.62C40.85,260.18,43.96,263.31,46.29,265.58z" fill="#fff"/>
-
-      <path d="M457.84,217.49c-3.06-3.06-7.29-4.77-11.6-4.7c-2.58,0.04-4.77,0.62-6.74,1.58c-0.65,0.36-1.28,0.76-1.87,1.2
-      c-2.33,2.27-5.43,5.41-9.22,9.31c-6.35,6.55-12.42,12.98-12.67,13.25c-6.06,6.43-5.76,16.56,0.67,22.62
-      c6.38,6.02,16.41,5.76,22.48-0.54c-5.24,93.14-82.66,167.31-177.09,167.31c-78.34,0-146.47-50.24-169.53-125.02
-      c-8.44,2.6-13.18,11.56-10.57,20.01c12.91,41.85,39.42,79.44,74.63,105.84c36.43,27.31,79.82,41.75,125.48,41.75
-      c111.2,0,202.42-87.14,208.99-196.72l0.88,0.88c3.12,3.12,7.22,4.69,11.31,4.69s8.19-1.56,11.31-4.69
-      c6.25-6.25,6.25-16.38,0-22.63L457.84,217.49z" fill="#fff"/>
+    <svg id="iconResetView" class="active" viewBox="0 0 24 24">
+      <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"
+            fill="#fff"></path>
     </svg>
   </button>
 
-  <!-- Camera -->
+  <!-- Camera mode (cinematic / top-down) -->
   <button id="btnCam" class="btn">
-    <svg id="iconCamCine" viewBox="0 0 24 24">
+    <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
       <polygon points="16,10 22,7.5 22,16.5 16,14"></polygon>
     </svg>
 
-    <svg id="iconCamBird" viewBox="4.3333375 6.3333375 43.875 40.375" style="display:none">
-      <path fill="#fff" d="M41.965,20.694c-0.495-2.08…"></path>
+    <svg id="iconCamBird" xmlns="http://www.w3.org/2000/svg"
+         viewBox="4.3333375 6.3333375 43.875 40.375"
+         style="transform:translate(1px,1px)">
+      <path fill="#fff" d="M41.965,20.694c-0.495-2.083-2.273-3.54-4.182-3.54c-1.816,0-3.717,1.149-5.184,2.522
+        c-3.911-5.328-9.661-9.706-13.112-12.527c-0.713,1.656-1.029,3.449-1.029,5.271c0,1.999,0.395,4.832,1.042,6.768L26,19.667H5.121
+        c2.5,5.762,7.472,9.976,13.329,12.333c-3.699,2.583-6.778,4.415-10.271,6.815c2.034,2.034,3.384,2.935,6.606,4.035
+        c2.205-3.185,3.991-5.396,5.582-7.654c2.219,0.988,4.734,1.532,7.207,1.532c11.183,0,14.263-12.188,14.509-14.603
+        c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z"/>
     </svg>
   </button>
 </div>
 
-<!-- RIGHT SIDE -->
+<!-- RIGHT SIDE: fullscreen / zoom / layers / speed -->
 <div class="ui ui-right">
 
   <button id="btnFull" class="btn">
-    <svg id="iconFull" viewBox="0 0 24 24">
-      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"></polyline>
-      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"></polyline>
-      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"></polyline>
-      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"></polyline>
+    <svg id="iconFull" class="active" viewBox="0 0 24 24">
+      <polyline points="4,9 4,4 9,4" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="20,9 20,4 15,4" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="4,15 4,20 9,20" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
+      <polyline points="20,15 20,20 15,20" fill="none" stroke="#fff" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"></polyline>
     </svg>
   </button>
 
   <button id="btnZoomIn" class="btn">
-    <svg id="iconZoomIn" viewBox="0 0 24 24">
+    <svg id="iconZoomIn" class="active" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="7" stroke="#fff" stroke-width="2" fill="none"></circle>
       <line x1="11" y1="8" x2="11" y2="14" stroke="#fff" stroke-width="2"></line>
       <line x1="8" y1="11" x2="14" y2="11" stroke="#fff" stroke-width="2"></line>
@@ -191,7 +185,7 @@
   </button>
 
   <button id="btnZoomOut" class="btn">
-    <svg id="iconZoomOut" viewBox="0 0 24 24">
+    <svg id="iconZoomOut" class="active" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="7" stroke="#fff" stroke-width="2" fill="none"></circle>
       <line x1="8" y1="11" x2="14" y2="11" stroke="#fff" stroke-width="2"></line>
       <line x1="16" y1="16" x2="21" y2="21" stroke="#fff" stroke-width="2"></line>
@@ -199,20 +193,19 @@
   </button>
 
   <button id="btnLayers" class="btn">
-    <svg id="iconLayers" viewBox="0 0 24 24">
-      <path d="M3 7l9-5 9 5-9 5-9-5zm0 5l9 5 9-5m-18 5l9 5 9-5" fill="#fff"/>
-    </svg>
+    <svg id="iconLayers" class="active"></svg>
   </button>
 
   <div class="speed-wrap" id="speedWrap">
     <button id="btnSpeed" class="btn">
-      <svg id="iconSpeed" viewBox="0 0 24 24" style="width:18px;height:18px">
+      <svg id="iconSpeed" class="active" viewBox="0 0 24 24">
         <path d="M4 5l8 7-8 7V5zm9 0l8 7-8 7V5z"></path>
       </svg>
     </button>
 
     <div class="speed-panel" id="speedPanel">
-      <input id="speed" class="speed-slider" type="range" min="0.1" max="5" step="0.05" value="0.35">
+      <input id="speed" class="speed-slider"
+             type="range" min="0.1" max="5" step="0.05" value="0.35">
     </div>
   </div>
 </div>
@@ -222,8 +215,366 @@
 <script src="https://unpkg.com/@tmcw/togeojson@5.8.0/dist/togeojson.umd.js"></script>
 
 <script>
-// THE REST OF YOUR JAVASCRIPT CODE REMAINS EXACTLY THE SAME
-// CAMERA, FOLLOWING, ROUTE ANIMATION, ZOOM, FULLSCREEN, ETC.
+mapboxgl.accessToken="pk.eyJ1IjoicmVtbWlhZ2JlYmkiLCJhIjoiY21odHRrYTQzMTk0bjJqcjE1b2xhZ2FraSJ9.nTCz33gX0gQt3T4A6VD0oQ";
+
+const GPX_URL="https://ca60d944-6ce0-4824-b204-1ba31932152f.filesusr.com/ugd/a3a8b8_063190b585b948a6ad31077eef19e6fa.gpx";
+
+const START_ZOOM=15.7,
+      CENTER_SMOOTH=0.06,
+      MAX_TURN_RATE=4,
+      STEP_KM=0.02;
+
+let currentZoom = START_ZOOM;
+let targetZoom  = START_ZOOM;
+
+function forceWhite(svg){
+  svg.querySelectorAll("*").forEach(n=>{
+    if(n.getAttribute("fill")!=="none") n.setAttribute("fill","#fff");
+    if(n.hasAttribute("stroke")) n.setAttribute("stroke","#fff");
+  });
+}
+
+(async()=>{
+  try{
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
+    const t=await r.text();
+    const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+    if(svg){
+      forceWhite(svg);
+      svg.id="iconSpeed";
+      svg.classList.add("active");
+      svg.style.width="18px";
+      svg.style.height="18px";
+      document.getElementById("iconSpeed").replaceWith(svg);
+    }
+  }catch(e){}
+})();
+
+(async()=>{
+  try{
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
+    const t=await r.text();
+    const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+    if(svg){
+      forceWhite(svg);
+      svg.id="iconLayers";
+      svg.classList.add("active");
+      svg.style.width="24px";
+      svg.style.height="24px";
+      document.getElementById("iconLayers").replaceWith(svg);
+    }
+  }catch(e){}
+})();
+
+const map=new mapboxgl.Map({
+  container:"map",
+  style:"mapbox://styles/mapbox/satellite-streets-v12",
+  center:[-1.8743,53.3832],
+  zoom:START_ZOOM,
+  pitch:75,
+  bearing:-20,
+  antialias:true
+});
+
+let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
+let userOverride=false;
+let camCenter=null,camBearing=null,lastTs=0;
+let osVisible=false;
+
+async function fetchText(u){
+  try{const r=await fetch(u);if(r.ok)return await r.text();}catch(e){}
+  try{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(u));if(r.ok)return await r.text();}catch(e){}
+  return "";
+}
+function parseGpx(text){
+  const xml=new DOMParser().parseFromString(text,"application/xml");
+  return toGeoJSON.gpx(xml).features.find(f=>f.geometry?.type==="LineString");
+}
+async function addArrow(){
+  if(map.hasImage("arrow"))return;
+  const c=document.createElement("canvas");
+  c.width=c.height=96;
+  const ctx=c.getContext("2d");
+  ctx.translate(48,48);
+  ctx.beginPath();
+  ctx.moveTo(40,0);
+  ctx.lineTo(-24,-25);
+  ctx.lineTo(-24,25);
+  ctx.closePath();
+  ctx.strokeStyle="#EC2629";
+  ctx.fillStyle="#fff";
+  ctx.lineWidth=3;
+  ctx.stroke();
+  ctx.fill();
+  map.addImage("arrow",await createImageBitmap(c),{pixelRatio:2});
+}
+
+map.on("load",async()=>{
+
+  map.addSource("mapbox-dem",{type:"raster-dem",url:"mapbox://mapbox.mapbox-terrain-dem-v1"});
+  map.setTerrain({source:"mapbox-dem",exaggeration:1});
+  map.addLayer({id:"sky",type:"sky",
+    paint:{"sky-type":"atmosphere","sky-atmosphere-sun-intensity":12}
+  });
+
+  map.addSource("os-topo",{
+    type:"raster",
+    tiles:[
+      "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+      "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+    ],
+    tileSize:256,
+    maxzoom:17
+  });
+  map.addLayer({
+    id:"os-topo-layer",
+    type:"raster",
+    source:"os-topo",
+    layout:{ visibility:"none" },
+    paint:{}
+  });
+
+  map.addSource("route",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+  map.addLayer({
+    id:"route-line",
+    type:"line",
+    source:"route",
+    paint:{
+      "line-color":"#EC2629",
+      "line-width":4,
+      "line-opacity":0.95
+    }
+  });
+
+  await addArrow();
+
+  map.addLayer({
+    id:"route-arrows",
+    type:"symbol",
+    source:"route",
+    layout:{
+      "symbol-placement":"line",
+      "symbol-spacing":110,
+      "icon-image":"arrow",
+      "icon-size":0.45,
+      "icon-allow-overlap":true,
+      "icon-ignore-placement":true,
+      "icon-rotation-alignment":"map",
+      "icon-keep-upright":false
+    },
+    paint:{"icon-opacity":0.9}
+  });
+
+  map.addSource("cursor",{type:"geojson",data:turf.point([0,0])});
+  map.addLayer({
+    id:"cursor-pt",
+    type:"circle",
+    source:"cursor",
+    paint:{
+      "circle-radius":6,
+      "circle-color":"#fff",
+      "circle-stroke-width":3,
+      "circle-stroke-color":"#EC2629"
+    }
+  });
+
+  const text=await fetchText(GPX_URL);
+  const line=parseGpx(text);
+  if(line){
+    const len=turf.length(line,{units:"kilometers"});
+    const pts=[];
+    for(let d=0;d<=len;d+=STEP_KM){
+      pts.push(
+        turf.along(line,Math.min(d,len),{units:"kilometers"}).geometry.coordinates
+      );
+    }
+    route={type:"Feature",geometry:{type:"LineString",coordinates:pts}};
+    routeLen=len;
+
+    map.getSource("route").setData(route);
+    map.getSource("cursor").setData(turf.point(pts[0]));
+
+    map.once("idle",()=>{
+      const b=turf.bbox(route);
+      map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{
+        padding:80,pitch:75,bearing:-20,duration:0
+      });
+      currentZoom = START_ZOOM;
+      targetZoom  = START_ZOOM;
+    });
+  }
+
+  requestAnimationFrame(tick);
+});
+
+function camIcons(){
+  return{
+    follow:document.getElementById("iconCamCine"),
+    topdown:document.getElementById("iconCamBird")
+  };
+}
+
+document.getElementById("btnToggle").onclick=()=>{
+  playing=!playing;
+  if(playing){
+    userOverride=false;
+    camCenter=null;
+    camBearing=null;
+    currentZoom = START_ZOOM;
+    targetZoom  = START_ZOOM;
+  }
+  document.getElementById("iconPlay").classList.toggle("active",!playing);
+  document.getElementById("iconPause").classList.toggle("active",playing);
+};
+
+document.getElementById("btnRestart").onclick=()=>{
+  if(!route) return;
+  progress=0;
+  const startCoord=route.geometry.coordinates[0];
+  map.getSource("cursor").setData(turf.point(startCoord));
+  camCenter=null;
+  camBearing=null;
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
+};
+
+document.getElementById("btnReset").onclick=()=>{
+  if(!route) return;
+  userOverride=false;
+  camMode="follow";
+  camCenter=null;
+  camBearing=null;
+  const icons=camIcons();
+  Object.values(icons).forEach(i=>i.classList.remove("active"));
+  icons.follow.classList.add("active");
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
+};
+
+const btnCam=document.getElementById("btnCam");
+btnCam.onclick=()=>{
+  camMode = (camMode === "follow") ? "topdown" : "follow";
+  const icons=camIcons();
+  Object.values(icons).forEach(i=>i.classList.remove("active"));
+  icons[camMode].classList.add("active");
+
+  userOverride=false;
+  camCenter=null;
+  camBearing=null;
+  currentZoom = START_ZOOM;
+  targetZoom  = START_ZOOM;
+};
+
+document.getElementById("btnLayers").onclick=()=>{
+  osVisible=!osVisible;
+  map.setLayoutProperty("os-topo-layer","visibility",osVisible?"visible":"none");
+};
+
+const speedWrap=document.getElementById("speedWrap");
+document.getElementById("btnSpeed").onclick=e=>{
+  e.stopPropagation();
+  speedWrap.classList.toggle("open");
+};
+document.addEventListener("click",()=>speedWrap.classList.remove("open"));
+
+const btnFull=document.getElementById("btnFull");
+function isFullscreen(){
+  return document.fullscreenElement || document.webkitFullscreenElement ||
+         document.mozFullScreenElement || document.msFullscreenElement;
+}
+btnFull.onclick=()=>{
+  if(!isFullscreen()){
+    const el=document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  }else{
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
+  }
+};
+
+document.getElementById("btnZoomIn").onclick=()=>{
+  const delta=0.7;
+  if(playing && (camMode==="follow"||camMode==="topdown") && !userOverride){
+    targetZoom = Math.min(targetZoom + delta, 19);
+  }else{
+    const z = map.getZoom()+delta;
+    map.easeTo({ zoom:z, duration:600 });
+    currentZoom = z;
+    targetZoom  = z;
+  }
+};
+document.getElementById("btnZoomOut").onclick=()=>{
+  const delta=0.7;
+  if(playing && (camMode==="follow"||camMode==="topdown") && !userOverride){
+    targetZoom = Math.max(targetZoom - delta, 4);
+  }else{
+    const z = map.getZoom()-delta;
+    map.easeTo({ zoom:z, duration:600 });
+    currentZoom = z;
+    targetZoom  = z;
+  }
+};
+
+["mousedown","touchstart","dragstart","rotatestart","zoomstart","pitchstart"].forEach(ev=>{
+  map.on(ev,e=>{
+    if(!e.originalEvent) return;
+    if(playing && (camMode==="follow"||camMode==="topdown")){
+      userOverride=true;
+    }
+  });
+});
+
+function tick(ts){
+  if(!lastTs) lastTs=ts;
+  const dt=(ts-lastTs)/1000;
+  lastTs=ts;
+
+  if(playing && route){
+    const speed=parseFloat(document.getElementById("speed").value||"0.35");
+    progress+=speed*dt*0.28;
+    if(progress>routeLen) progress=0;
+
+    const pos=turf.along(route,progress,{units:"kilometers"}).geometry.coordinates;
+    const nxt=turf.along(route,Math.min(progress+0.01,routeLen),{units:"kilometers"}).geometry.coordinates;
+
+    map.getSource("cursor").setData(turf.point(pos));
+
+    if((camMode==="follow" || camMode==="topdown") && !userOverride){
+      const targetCenter=pos;
+      const targetBearing=turf.bearing(turf.point(pos),turf.point(nxt));
+      const targetPitch=camMode==="topdown"?0:75;
+
+      if(camBearing===null) camBearing=targetBearing;
+      const diff=((targetBearing-camBearing+540)%360)-180;
+      camBearing+=Math.max(-MAX_TURN_RATE*dt,Math.min(MAX_TURN_RATE*dt,diff));
+
+      if(!camCenter) camCenter=targetCenter;
+      camCenter=[
+        camCenter[0]+(targetCenter[0]-camCenter[0])*CENTER_SMOOTH,
+        camCenter[1]+(targetCenter[1]-camCenter[1])*CENTER_SMOOTH
+      ];
+
+      const dz = targetZoom - currentZoom;
+      const zoomLerp = Math.min(1, 3*dt);
+      currentZoom = currentZoom + dz*zoomLerp;
+
+      map.jumpTo({
+        center:camCenter,
+        bearing:camBearing,
+        pitch:targetPitch,
+        zoom:currentZoom
+      });
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
 </script>
 
 </body>
