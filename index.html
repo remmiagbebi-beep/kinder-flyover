@@ -108,7 +108,7 @@
 <body>
 <div id="map"></div>
 
-<!-- LEFT SIDE: play / restart / reset / camera -->
+<!-- LEFT SIDE -->
 <div class="ui ui-left">
 
   <!-- Play / Pause -->
@@ -122,7 +122,7 @@
     </svg>
   </button>
 
-  <!-- Restart flyover (icon moved 2px right) -->
+  <!-- Restart Flyover -->
   <button id="btnRestart" class="btn">
     <svg id="iconRestart" class="active" viewBox="0 0 24 24" style="transform:translateX(2px)">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
@@ -132,15 +132,12 @@
     </svg>
   </button>
 
-  <!-- Reset view (house icon back to original) -->
+  <!-- Reset View (house removed, placeholder for replacement) -->
   <button id="btnReset" class="btn">
-    <svg id="iconResetView" class="active" viewBox="0 0 24 24">
-      <path d="M4 10L12 4l8 6v8a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"
-            fill="#fff"></path>
-    </svg>
+    <svg id="iconResetView" class="active"></svg>
   </button>
 
-  <!-- Camera mode (cinematic / top-down) -->
+  <!-- Camera Mode -->
   <button id="btnCam" class="btn">
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
@@ -159,7 +156,7 @@
   </button>
 </div>
 
-<!-- RIGHT SIDE: fullscreen / zoom / layers / speed -->
+<!-- RIGHT SIDE -->
 <div class="ui ui-right">
 
   <button id="btnFull" class="btn">
@@ -234,6 +231,7 @@ function forceWhite(svg){
   });
 }
 
+/* FAST FORWARD ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -250,6 +248,7 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
+/* LAYERS ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -262,6 +261,23 @@ function forceWhite(svg){
       svg.style.width="24px";
       svg.style.height="24px";
       document.getElementById("iconLayers").replaceWith(svg);
+    }
+  }catch(e){}
+})();
+
+/* RESET CAMERA VIEW ICON — replaces house completely */
+(async()=>{
+  try{
+    const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/reset-camera-view.svg");
+    const t=await r.text();
+    const svg=new DOMParser().parseFromString(t,"image/svg+xml").querySelector("svg");
+    if(svg){
+      forceWhite(svg);
+      svg.id="iconResetView";
+      svg.classList.add("active");
+      svg.style.width="24px";
+      svg.style.height="24px";
+      document.getElementById("iconResetView").replaceWith(svg);
     }
   }catch(e){}
 })();
