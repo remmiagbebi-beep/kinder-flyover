@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html> 
 <html lang="en">
 <head>
@@ -116,6 +117,14 @@ html,body{
   right:20px;
   z-index:20;
   display:none;
+}
+
+/* Hide all Mapbox branding (logo, attribution, default controls) */
+.mapboxgl-ctrl-logo,
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right{
+  display:none !important;
 }
 
 /* (Unused now, but harmless) fake fullscreen styles */
@@ -404,7 +413,8 @@ const map=new mapboxgl.Map({
   zoom:START_ZOOM,
   pitch:75,
   bearing:-20,
-  antialias:true
+  antialias:true,
+  attributionControl:false
 });
 
 let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
@@ -770,3 +780,4 @@ function tick(ts){
 
 </body>
 </html>
+```
