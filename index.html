@@ -17,7 +17,7 @@ html,body{
   height:100%;
   background:#000;
   font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  overflow:hidden; /* prevent scrollbars */
+  overflow:hidden;
 }
 #map{ position:absolute; inset:0 }
 
@@ -118,7 +118,7 @@ html,body{
   display:none;
 }
 
-/* Hide all Mapbox branding (logo, attribution, default controls) */
+/* Hide all Mapbox branding */
 .mapboxgl-ctrl-logo,
 .mapboxgl-ctrl-attrib,
 .mapboxgl-ctrl-bottom-left,
@@ -126,7 +126,7 @@ html,body{
   display:none !important;
 }
 
-/* (Unused now, but harmless) fake fullscreen styles */
+/* Fake fullscreen hook (not used on iOS now but harmless) */
 body.fake-fullscreen #map{
   position:fixed;
   inset:0;
@@ -140,7 +140,7 @@ body.fake-fullscreen #btnMobileMenu{
 /* MOBILE LAYOUT + 85% BUTTON SIZE */
 @media (max-width: 767px){
 
-  /* shrink all buttons to 85% of original */
+  /* base mobile buttons: 85% of original */
   .btn{
     width:42px;
     height:42px;
@@ -151,13 +151,11 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
-  /* reset camera icon override */
   #iconResetView{
     width:34px !important;
     height:34px !important;
   }
 
-  /* speed button + panel scaled */
   .speed-wrap{
     width:42px;
     height:42px;
@@ -175,12 +173,12 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* UI layout: backwards L, slightly tighter gaps */
+  /* backwards L with consistent 8px gaps */
   .ui-left,
   .ui-right{
     top:auto;
     transform:none;
-    gap:6px;
+    gap:8px;
   }
 
   .ui-left{
@@ -191,15 +189,15 @@ body.fake-fullscreen #btnMobileMenu{
     align-items:flex-end;
   }
 
+  /* right offset chosen so gap between menu and first button = 8px */
   .ui-right{
     bottom:20px;
-    right:70px;
+    right:28px;
     left:auto;
     flex-direction:row-reverse;
     align-items:flex-end;
   }
 
-  /* mobile menu button scaled too */
   #btnMobileMenu{
     width:42px;
     height:42px;
@@ -210,44 +208,49 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
-  /* OVERRIDES FOR iOS FULLSCREEN TAB – restore original sizes */
+  /* iOS FULLSCREEN TAB OVERRIDES */
   body.ios-fullscreen .btn{
-    width:50px;
-    height:50px;
-    border-width:3px;
+    width:58px;
+    height:58px;
+    border-width:4px;
   }
   body.ios-fullscreen .btn svg{
-    width:24px;
-    height:24px;
+    width:28px;
+    height:28px;
   }
   body.ios-fullscreen #iconResetView{
-    width:40px !important;
-    height:40px !important;
+    width:46px !important;
+    height:46px !important;
   }
   body.ios-fullscreen .speed-wrap{
-    width:50px;
-    height:50px;
+    width:58px;
+    height:58px;
   }
   body.ios-fullscreen .speed-panel{
-    height:45px;
+    height:52px;
     right:60px;
-    width:230px;
-    border-width:3px;
-    gap:12px;
-    padding:0 10px;
+    width:260px;
+    border-width:4px;
+    gap:14px;
+    padding:0 12px;
   }
   body.ios-fullscreen .speed-slider::-webkit-slider-thumb{
-    width:18px;
-    height:18px;
+    width:20px;
+    height:20px;
   }
   body.ios-fullscreen #btnMobileMenu{
-    width:50px;
-    height:50px;
-    border-width:3px;
+    width:58px;
+    height:58px;
+    border-width:4px;
   }
   body.ios-fullscreen #btnMobileMenu svg{
-    width:24px;
-    height:24px;
+    width:28px;
+    height:28px;
+  }
+
+  /* hide fullscreen button in iOS fullscreen tab only */
+  body.ios-fullscreen #btnFull{
+    display:none !important;
   }
 }
 </style>
@@ -259,7 +262,6 @@ body.fake-fullscreen #btnMobileMenu{
 <!-- LEFT SIDE: play / restart / reset / camera -->
 <div class="ui ui-left">
 
-  <!-- Play / Pause -->
   <button id="btnToggle" class="btn">
     <svg id="iconPlay" class="active" viewBox="0 0 24 24">
       <polygon transform="translate(1,0)" points="5,3 19,12 5,21"></polygon>
@@ -270,7 +272,6 @@ body.fake-fullscreen #btnMobileMenu{
     </svg>
   </button>
 
-  <!-- Restart flyover -->
   <button id="btnRestart" class="btn">
     <svg id="iconRestart" class="active" viewBox="0 0 24 24" style="transform:translateX(2px)">
       <path d="M5 4v5h5" fill="none" stroke="#fff" stroke-width="2"
@@ -280,7 +281,6 @@ body.fake-fullscreen #btnMobileMenu{
     </svg>
   </button>
 
-  <!-- Reset view -->
   <button id="btnReset" class="btn">
     <svg id="iconResetView"
        class="active"
@@ -309,7 +309,6 @@ body.fake-fullscreen #btnMobileMenu{
     </svg>
   </button>
 
-  <!-- Camera mode -->
   <button id="btnCam" class="btn">
     <svg id="iconCamCine" class="active" viewBox="0 0 24 24">
       <rect x="3" y="7" width="11" height="10" rx="2"></rect>
@@ -411,7 +410,7 @@ function forceWhite(svg){
   });
 }
 
-/* FAST FORWARD ICON (speed button) */
+/* FAST FORWARD ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -659,7 +658,7 @@ document.getElementById("btnSpeed").onclick=e=>{
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
 /* Fullscreen:
-   - iOS: open same page in new tab with ?fs=1 for fullscreen layout
+   - iOS: open same page in new tab with ?fs=1 (fullscreen layout)
    - others: real Fullscreen API
 */
 const btnFull=document.getElementById("btnFull");
@@ -682,19 +681,19 @@ function isIOS(){
   const params = new URLSearchParams(window.location.search);
   if(isIOS() && params.get("fs") === "1"){
     document.body.classList.add("ios-fullscreen");
+    const bf = document.getElementById("btnFull");
+    if(bf) bf.style.display = "none";
   }
 })();
 
 btnFull.onclick=()=>{
   if(isIOS()){
-    // Open standalone fullscreen variant in new tab with ?fs=1
     const url = new URL(window.location.href);
     url.searchParams.set("fs","1");
     window.open(url.toString(), "_blank");
     return;
   }
 
-  // Real fullscreen for non-iOS
   if(!isFullscreen()){
     const el=document.documentElement;
     if(el.requestFullscreen) el.requestFullscreen();
