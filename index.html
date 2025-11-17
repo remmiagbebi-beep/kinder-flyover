@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html> 
 <html lang="en">
 <head>
@@ -138,42 +137,42 @@ body.fake-fullscreen #btnMobileMenu{
   z-index:2;
 }
 
-/* MOBILE LAYOUT + 75% BUTTON SIZE */
+/* MOBILE LAYOUT + 85% BUTTON SIZE */
 @media (max-width: 767px){
 
-  /* shrink all buttons to 75% */
+  /* shrink all buttons to 85% of original */
   .btn{
-    width:38px;
-    height:38px;
+    width:42px;
+    height:42px;
     border-width:2px;
   }
   .btn svg{
-    width:18px;
-    height:18px;
+    width:20px;
+    height:20px;
   }
 
   /* reset camera icon override */
   #iconResetView{
-    width:30px !important;
-    height:30px !important;
+    width:34px !important;
+    height:34px !important;
   }
 
   /* speed button + panel scaled */
   .speed-wrap{
-    width:38px;
-    height:38px;
+    width:42px;
+    height:42px;
   }
   .speed-panel{
-    height:34px;
-    right:48px;
-    width:170px;
+    height:36px;
+    right:50px;
+    width:185px;
     border-width:2px;
-    gap:8px;
-    padding:0 6px;
+    gap:9px;
+    padding:0 7px;
   }
   .speed-slider::-webkit-slider-thumb{
-    width:14px;
-    height:14px;
+    width:15px;
+    height:15px;
   }
 
   /* UI layout: backwards L, slightly tighter gaps */
@@ -202,13 +201,53 @@ body.fake-fullscreen #btnMobileMenu{
 
   /* mobile menu button scaled too */
   #btnMobileMenu{
-    width:38px;
-    height:38px;
+    width:42px;
+    height:42px;
     border-width:2px;
   }
   #btnMobileMenu svg{
+    width:20px;
+    height:20px;
+  }
+
+  /* OVERRIDES FOR iOS FULLSCREEN TAB – restore original sizes */
+  body.ios-fullscreen .btn{
+    width:50px;
+    height:50px;
+    border-width:3px;
+  }
+  body.ios-fullscreen .btn svg{
+    width:24px;
+    height:24px;
+  }
+  body.ios-fullscreen #iconResetView{
+    width:40px !important;
+    height:40px !important;
+  }
+  body.ios-fullscreen .speed-wrap{
+    width:50px;
+    height:50px;
+  }
+  body.ios-fullscreen .speed-panel{
+    height:45px;
+    right:60px;
+    width:230px;
+    border-width:3px;
+    gap:12px;
+    padding:0 10px;
+  }
+  body.ios-fullscreen .speed-slider::-webkit-slider-thumb{
     width:18px;
     height:18px;
+  }
+  body.ios-fullscreen #btnMobileMenu{
+    width:50px;
+    height:50px;
+    border-width:3px;
+  }
+  body.ios-fullscreen #btnMobileMenu svg{
+    width:24px;
+    height:24px;
   }
 }
 </style>
@@ -620,7 +659,7 @@ document.getElementById("btnSpeed").onclick=e=>{
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
 /* Fullscreen:
-   - iOS: open same page in new tab for standalone view
+   - iOS: open same page in new tab with ?fs=1 for fullscreen layout
    - others: real Fullscreen API
 */
 const btnFull=document.getElementById("btnFull");
@@ -638,10 +677,20 @@ function isIOS(){
   return iOS || iPadOS;
 }
 
+/* Detect iOS fullscreen tab via ?fs=1 and set class */
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(isIOS() && params.get("fs") === "1"){
+    document.body.classList.add("ios-fullscreen");
+  }
+})();
+
 btnFull.onclick=()=>{
   if(isIOS()){
-    // Open standalone map in new tab for iPhone/iPad
-    window.open(window.location.href, "_blank");
+    // Open standalone fullscreen variant in new tab with ?fs=1
+    const url = new URL(window.location.href);
+    url.searchParams.set("fs","1");
+    window.open(url.toString(), "_blank");
     return;
   }
 
@@ -780,4 +829,3 @@ function tick(ts){
 
 </body>
 </html>
-```
