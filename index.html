@@ -126,7 +126,7 @@ html,body{
   display:none !important;
 }
 
-/* Fake fullscreen hook (not used on iOS now but harmless) */
+/* Fake fullscreen hook (desktop / android) */
 body.fake-fullscreen #map{
   position:fixed;
   inset:0;
@@ -137,14 +137,14 @@ body.fake-fullscreen #btnMobileMenu{
   z-index:2;
 }
 
-/* MOBILE LAYOUT + 85% BUTTON SIZE */
+/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS */
 @media (max-width: 767px){
 
-  /* base mobile buttons: 85% of original */
+  /* buttons 85% and NO white border on mobile */
   .btn{
     width:42px;
     height:42px;
-    border-width:2px;
+    border:none;
   }
   .btn svg{
     width:20px;
@@ -164,7 +164,7 @@ body.fake-fullscreen #btnMobileMenu{
     height:36px;
     right:50px;
     width:185px;
-    border-width:2px;
+    border:none;
     gap:9px;
     padding:0 7px;
   }
@@ -173,7 +173,7 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* backwards L with consistent 8px gaps */
+  /* backwards L with consistent 8px gaps, lifted above browser toolbar */
   .ui-left,
   .ui-right{
     top:auto;
@@ -182,16 +182,15 @@ body.fake-fullscreen #btnMobileMenu{
   }
 
   .ui-left{
-    bottom:70px;
-    right:20px;
+    bottom:110px;    /* vertical stack higher */
+    right:28px;
     left:auto;
     flex-direction:column;
     align-items:flex-end;
   }
 
-  /* right offset chosen so gap between menu and first button = 8px */
   .ui-right{
-    bottom:20px;
+    bottom:40px;     /* bottom row raised so not hidden by Safari bar */
     right:28px;
     left:auto;
     flex-direction:row-reverse;
@@ -201,54 +200,55 @@ body.fake-fullscreen #btnMobileMenu{
   #btnMobileMenu{
     width:42px;
     height:42px;
-    border-width:2px;
+    border:none;
+    bottom:40px;     /* lifted with bottom row */
   }
   #btnMobileMenu svg{
     width:20px;
     height:20px;
   }
 
-  /* iOS FULLSCREEN TAB OVERRIDES */
+  /* iOS FULLSCREEN TAB OVERRIDES:
+     - buttons 15% larger than original mobile (so slightly bigger than desktop)
+     - fullscreen button hidden (already fullscreen)
+  */
   body.ios-fullscreen .btn{
-    width:58px;
-    height:58px;
-    border-width:4px;
+    width:67px;   /* 58 * 1.15 approx → larger look */
+    height:67px;
   }
   body.ios-fullscreen .btn svg{
-    width:28px;
-    height:28px;
+    width:32px;
+    height:32px;
   }
   body.ios-fullscreen #iconResetView{
-    width:46px !important;
-    height:46px !important;
+    width:52px !important;
+    height:52px !important;
   }
   body.ios-fullscreen .speed-wrap{
-    width:58px;
-    height:58px;
+    width:67px;
+    height:67px;
   }
   body.ios-fullscreen .speed-panel{
-    height:52px;
+    height:56px;
     right:60px;
-    width:260px;
-    border-width:4px;
-    gap:14px;
-    padding:0 12px;
+    width:270px;
+    gap:16px;
+    padding:0 14px;
   }
   body.ios-fullscreen .speed-slider::-webkit-slider-thumb{
-    width:20px;
-    height:20px;
+    width:22px;
+    height:22px;
   }
   body.ios-fullscreen #btnMobileMenu{
-    width:58px;
-    height:58px;
-    border-width:4px;
+    width:67px;
+    height:67px;
   }
   body.ios-fullscreen #btnMobileMenu svg{
-    width:28px;
-    height:28px;
+    width:32px;
+    height:32px;
   }
 
-  /* hide fullscreen button in iOS fullscreen tab only */
+  /* hide fullscreen button ONLY in iOS fullscreen instance */
   body.ios-fullscreen #btnFull{
     display:none !important;
   }
