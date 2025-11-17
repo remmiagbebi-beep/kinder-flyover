@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -116,6 +116,33 @@ html,body{
   right:20px;
   z-index:20;
   display:none; /* shown via JS only on small screens */
+}
+
+/* MOBILE LAYOUT: backwards L shape around the menu button */
+@media (max-width: 767px){
+  .ui-left,
+  .ui-right{
+    top:auto;
+    transform:none;
+    gap:10px;          /* tighter, equal spacing */
+  }
+
+  /* vertical stack above menu button */
+  .ui-left{
+    bottom:90px;       /* directly above menu */
+    right:20px;
+    left:auto;
+    flex-direction:column-reverse;  /* button closest to menu at bottom of column */
+  }
+
+  /* horizontal row along bottom, to the left of menu */
+  .ui-right{
+    bottom:20px;
+    right:90px;        /* leaves a gap between last button and menu */
+    left:auto;
+    flex-direction:row-reverse;     /* button closest to menu at right end of row */
+    align-items:flex-end;
+  }
 }
 </style>
 </head>
