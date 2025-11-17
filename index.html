@@ -118,7 +118,7 @@ html,body{
   display:none;
 }
 
-/* FAKE FULLSCREEN FOR MOBILE */
+/* FAKE FULLSCREEN FOR iOS MOBILE */
 body.fake-fullscreen #map{
   position:fixed;
   inset:0;
@@ -609,20 +609,25 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Fullscreen: real on desktop/Android, fake CSS fullscreen on mobile */
+/* Fullscreen: real on non-iOS, fake CSS fullscreen on iOS */
 const btnFull=document.getElementById("btnFull");
 
 function isFullscreen(){
   return document.fullscreenElement || document.webkitFullscreenElement ||
          document.mozFullScreenElement || document.msFullscreenElement;
 }
-function isMobileWidth(){
-  return window.matchMedia("(max-width: 767px)").matches;
+
+function isIOS(){
+  const ua = window.navigator.userAgent || "";
+  const platform = window.navigator.platform || "";
+  const iOS = /iPad|iPhone|iPod/.test(ua);
+  const iPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return iOS || iPadOS;
 }
 
 btnFull.onclick=()=>{
-  if(isMobileWidth()){
-    // fake fullscreen inside iframe on mobile
+  if(isIOS()){
+    // fake fullscreen inside iframe on iOS
     document.body.classList.toggle("fake-fullscreen");
   }else{
     // real fullscreen where supported
