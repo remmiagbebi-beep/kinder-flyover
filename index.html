@@ -118,29 +118,30 @@ html,body{
   display:none; /* shown via JS only on small screens */
 }
 
-/* MOBILE LAYOUT: backwards L shape around the menu button */
+/* MOBILE LAYOUT: backwards L, tighter and even gaps */
 @media (max-width: 767px){
   .ui-left,
   .ui-right{
     top:auto;
     transform:none;
-    gap:10px;          /* tighter, equal spacing */
+    gap:8px;              /* smaller, even spacing */
   }
 
-  /* vertical stack above menu button */
+  /* vertical stack above menu button (now includes speed) */
   .ui-left{
-    bottom:90px;       /* directly above menu */
+    bottom:80px;          /* 10px gap from menu (20 + 50 + 10) */
     right:20px;
     left:auto;
-    flex-direction:column-reverse;  /* button closest to menu at bottom of column */
+    flex-direction:column;
+    align-items:flex-end;
   }
 
   /* horizontal row along bottom, to the left of menu */
   .ui-right{
     bottom:20px;
-    right:90px;        /* leaves a gap between last button and menu */
+    right:80px;           /* 10px gap from menu horizontally */
     left:auto;
-    flex-direction:row-reverse;     /* button closest to menu at right end of row */
+    flex-direction:row-reverse;  /* button closest to menu on the right end */
     align-items:flex-end;
   }
 }
@@ -222,6 +223,8 @@ html,body{
         c0.972-0.161,1.946-0.328,2.918-0.455C43.971,21.4,42.953,21.075,41.965,20.694z"/>
     </svg>
   </button>
+
+  <!-- speed-wrap will be moved up here on mobile by JS -->
 </div>
 
 <!-- RIGHT SIDE: fullscreen / zoom / layers / speed -->
@@ -652,7 +655,7 @@ function tick(ts){
   requestAnimationFrame(tick);
 }
 
-/* MOBILE MENU TOGGLE – pure JS, does not touch the map */
+/* MOBILE MENU TOGGLE – plus move speed button into the vertical stack on mobile */
 (function(){
   const btnMobileMenu = document.getElementById("btnMobileMenu");
   const uiLeft = document.querySelector(".ui-left");
@@ -668,6 +671,12 @@ function tick(ts){
   }
 
   if(isMobile){
+    /* move speed (and its panel) into the vertical column so it doesn't go off-screen */
+    const speedWrapEl = document.getElementById("speedWrap");
+    if(speedWrapEl){
+      uiLeft.appendChild(speedWrapEl);
+    }
+
     btnMobileMenu.style.display = "flex";
     setControlsVisible(false); // hidden by default on mobile
     let visible = false;
