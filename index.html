@@ -118,7 +118,7 @@ html,body{
   display:none;
 }
 
-/* FAKE FULLSCREEN FOR iOS MOBILE */
+/* (Unused now, but harmless) fake fullscreen styles */
 body.fake-fullscreen #map{
   position:fixed;
   inset:0;
@@ -609,7 +609,10 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Fullscreen: real on non-iOS, fake CSS fullscreen on iOS */
+/* Fullscreen:
+   - iOS: open same page in new tab for standalone view
+   - others: real Fullscreen API
+*/
 const btnFull=document.getElementById("btnFull");
 
 function isFullscreen(){
@@ -627,22 +630,23 @@ function isIOS(){
 
 btnFull.onclick=()=>{
   if(isIOS()){
-    // fake fullscreen inside iframe on iOS
-    document.body.classList.toggle("fake-fullscreen");
+    // Open standalone map in new tab for iPhone/iPad
+    window.open(window.location.href, "_blank");
+    return;
+  }
+
+  // Real fullscreen for non-iOS
+  if(!isFullscreen()){
+    const el=document.documentElement;
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
   }else{
-    // real fullscreen where supported
-    if(!isFullscreen()){
-      const el=document.documentElement;
-      if(el.requestFullscreen) el.requestFullscreen();
-      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
-      else if(el.msRequestFullscreen) el.msRequestFullscreen();
-    }else{
-      if(document.exitFullscreen) document.exitFullscreen();
-      else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
-      else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
-      else if(document.msExitFullscreen) document.msExitFullscreen();
-    }
+    if(document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
   }
 };
 
