@@ -140,10 +140,16 @@ body.fake-fullscreen #btnMobileMenu{
 /* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS, PERFECT L ALIGNMENT */
 @media (max-width: 767px){
 
+  :root{
+    --btn-size:42px;
+    --gap:8px;
+    --menu-offset:20px;
+  }
+
   /* all buttons 85% of desktop and NO border */
   .btn{
-    width:42px;
-    height:42px;
+    width:var(--btn-size);
+    height:var(--btn-size);
     border:none;
   }
   .btn svg{
@@ -157,8 +163,8 @@ body.fake-fullscreen #btnMobileMenu{
   }
 
   .speed-wrap{
-    width:42px;
-    height:42px;
+    width:var(--btn-size);
+    height:var(--btn-size);
   }
   .speed-panel{
     height:36px;
@@ -173,47 +179,17 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* make menu participate in flex row */
+  /* menu stays absolutely positioned bottom-right */
   .mobile-menu-btn{
-    position:static;
-    bottom:auto;
-    right:auto;
-    z-index:auto;
-  }
-
-  /* backwards L: same 8px gap everywhere, aligned on right edge */
-  .ui-left,
-  .ui-right{
-    top:auto;
-    transform:none;
-    gap:8px;
-  }
-
-  /* vertical stack above bottom row:
-     bottom = 20 (row) + 42 (button) + 8 (gap) = 70
-  */
-  .ui-left{
-    bottom:70px;
-    right:20px;
-    left:auto;
-    flex-direction:column;
-    align-items:flex-end;
-  }
-
-  /* bottom row: right edge flush with menu, equal gaps including menu */
-  .ui-right{
-    bottom:20px;
-    right:20px;
-    left:auto;
-    flex-direction:row;
-    align-items:flex-end;
-    justify-content:flex-end;
-    gap:8px;
+    position:absolute;
+    bottom:var(--menu-offset);
+    right:var(--menu-offset);
+    z-index:20;
   }
 
   #btnMobileMenu{
-    width:42px;
-    height:42px;
+    width:var(--btn-size);
+    height:var(--btn-size);
     border:none;
   }
   #btnMobileMenu svg{
@@ -221,12 +197,38 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
+  /* backwards L: all gaps = var(--gap), edges aligned to menu */
+  .ui-left,
+  .ui-right{
+    top:auto;
+    transform:none;
+    gap:var(--gap);
+  }
+
+  /* bottom row to the left of menu */
+  .ui-right{
+    bottom:var(--menu-offset);
+    right:calc(var(--menu-offset) + var(--btn-size) + var(--gap));
+    left:auto;
+    flex-direction:row-reverse;
+    align-items:flex-end;
+  }
+
+  /* vertical stack above menu */
+  .ui-left{
+    bottom:calc(var(--menu-offset) + var(--btn-size) + var(--gap));
+    right:var(--menu-offset);
+    left:auto;
+    flex-direction:column;
+    align-items:flex-end;
+  }
+
   /* iOS FULLSCREEN TAB OVERRIDES:
      - buttons 15% smaller than previous fullscreen size
      - fullscreen button hidden (already fullscreen)
   */
   body.ios-fullscreen .btn{
-    width:57px;   /* ~15% smaller than 67 */
+    width:57px;
     height:57px;
   }
   body.ios-fullscreen .btn svg{
@@ -800,7 +802,7 @@ function tick(ts){
 }
 
 /* MOBILE MENU TOGGLE – Layers + Speed in vertical stack on mobile,
-   menu moved into bottom row for perfect alignment */
+   menu stays separate in bottom-right */
 (function(){
   const btnMobileMenu = document.getElementById("btnMobileMenu");
   const uiLeft = document.querySelector(".ui-left");
@@ -826,10 +828,7 @@ function tick(ts){
       uiLeft.appendChild(speedWrapEl);
     }
 
-    /* move menu into bottom row so gaps are perfectly even */
-    uiRight.appendChild(btnMobileMenu);
     btnMobileMenu.style.display = "flex";
-
     setControlsVisible(false);
     let visible = false;
     btnMobileMenu.addEventListener("click",()=>{
