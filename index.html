@@ -137,10 +137,10 @@ body.fake-fullscreen #btnMobileMenu{
   z-index:2;
 }
 
-/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS */
+/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS, PERFECT L ALIGNMENT */
 @media (max-width: 767px){
 
-  /* buttons 85% and NO white border on mobile */
+  /* all buttons 85% of desktop and NO border */
   .btn{
     width:42px;
     height:42px;
@@ -173,7 +173,15 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* backwards L with consistent 8px gaps, lifted above browser toolbar */
+  /* make menu participate in flex row */
+  .mobile-menu-btn{
+    position:static;
+    bottom:auto;
+    right:auto;
+    z-index:auto;
+  }
+
+  /* backwards L: same 8px gap everywhere, aligned on right edge */
   .ui-left,
   .ui-right{
     top:auto;
@@ -181,28 +189,32 @@ body.fake-fullscreen #btnMobileMenu{
     gap:8px;
   }
 
+  /* vertical stack above bottom row:
+     bottom = 20 (row) + 42 (button) + 8 (gap) = 70
+  */
   .ui-left{
-    bottom:110px;
-    right:28px;
+    bottom:70px;
+    right:20px;
     left:auto;
     flex-direction:column;
     align-items:flex-end;
   }
 
-  /* shift bottom row left so fullscreen is not behind menu */
+  /* bottom row: right edge flush with menu, equal gaps including menu */
   .ui-right{
-    bottom:40px;
-    right:90px;     /* moved left from the menu */
+    bottom:20px;
+    right:20px;
     left:auto;
-    flex-direction:row-reverse;
+    flex-direction:row;
     align-items:flex-end;
+    justify-content:flex-end;
+    gap:8px;
   }
 
   #btnMobileMenu{
     width:42px;
     height:42px;
     border:none;
-    bottom:40px;
   }
   #btnMobileMenu svg{
     width:20px;
@@ -210,43 +222,43 @@ body.fake-fullscreen #btnMobileMenu{
   }
 
   /* iOS FULLSCREEN TAB OVERRIDES:
-     - buttons 15% larger than original mobile
+     - buttons 15% smaller than previous fullscreen size
      - fullscreen button hidden (already fullscreen)
   */
   body.ios-fullscreen .btn{
-    width:67px;
-    height:67px;
+    width:57px;   /* ~15% smaller than 67 */
+    height:57px;
   }
   body.ios-fullscreen .btn svg{
-    width:32px;
-    height:32px;
+    width:27px;
+    height:27px;
   }
   body.ios-fullscreen #iconResetView{
-    width:52px !important;
-    height:52px !important;
+    width:45px !important;
+    height:45px !important;
   }
   body.ios-fullscreen .speed-wrap{
-    width:67px;
-    height:67px;
+    width:57px;
+    height:57px;
   }
   body.ios-fullscreen .speed-panel{
-    height:56px;
+    height:50px;
     right:60px;
-    width:270px;
-    gap:16px;
-    padding:0 14px;
+    width:255px;
+    gap:14px;
+    padding:0 12px;
   }
   body.ios-fullscreen .speed-slider::-webkit-slider-thumb{
-    width:22px;
-    height:22px;
+    width:20px;
+    height:20px;
   }
   body.ios-fullscreen #btnMobileMenu{
-    width:67px;
-    height:67px;
+    width:57px;
+    height:57px;
   }
   body.ios-fullscreen #btnMobileMenu svg{
-    width:32px;
-    height:32px;
+    width:27px;
+    height:27px;
   }
 
   /* hide fullscreen button ONLY in iOS fullscreen instance */
@@ -787,7 +799,8 @@ function tick(ts){
   requestAnimationFrame(tick);
 }
 
-/* MOBILE MENU TOGGLE – Layers + Speed in vertical stack on mobile */
+/* MOBILE MENU TOGGLE – Layers + Speed in vertical stack on mobile,
+   menu moved into bottom row for perfect alignment */
 (function(){
   const btnMobileMenu = document.getElementById("btnMobileMenu");
   const uiLeft = document.querySelector(".ui-left");
@@ -813,7 +826,10 @@ function tick(ts){
       uiLeft.appendChild(speedWrapEl);
     }
 
+    /* move menu into bottom row so gaps are perfectly even */
+    uiRight.appendChild(btnMobileMenu);
     btnMobileMenu.style.display = "flex";
+
     setControlsVisible(false);
     let visible = false;
     btnMobileMenu.addEventListener("click",()=>{
