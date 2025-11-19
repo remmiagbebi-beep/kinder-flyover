@@ -179,7 +179,7 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* menu stays absolutely positioned bottom-right */
+  /* menu absolutely in bottom-right */
   .mobile-menu-btn{
     position:absolute;
     bottom:var(--menu-offset);
@@ -223,14 +223,14 @@ body.fake-fullscreen #btnMobileMenu{
     align-items:flex-end;
   }
 
-  /* iOS FULLSCREEN TAB OVERRIDES:
-     - buttons 15% smaller than previous fullscreen size
+  /* iOS FULLSCREEN TAB:
+     - just change --btn-size so all spacing maths still works
      - fullscreen button hidden (already fullscreen)
   */
-  body.ios-fullscreen .btn{
-    width:57px;
-    height:57px;
+  body.ios-fullscreen{
+    --btn-size:57px; /* 15% smaller than previous fullscreen size of 67px */
   }
+
   body.ios-fullscreen .btn svg{
     width:27px;
     height:27px;
@@ -238,10 +238,6 @@ body.fake-fullscreen #btnMobileMenu{
   body.ios-fullscreen #iconResetView{
     width:45px !important;
     height:45px !important;
-  }
-  body.ios-fullscreen .speed-wrap{
-    width:57px;
-    height:57px;
   }
   body.ios-fullscreen .speed-panel{
     height:50px;
@@ -254,16 +250,7 @@ body.fake-fullscreen #btnMobileMenu{
     width:20px;
     height:20px;
   }
-  body.ios-fullscreen #btnMobileMenu{
-    width:57px;
-    height:57px;
-  }
-  body.ios-fullscreen #btnMobileMenu svg{
-    width:27px;
-    height:27px;
-  }
 
-  /* hide fullscreen button ONLY in iOS fullscreen instance */
   body.ios-fullscreen #btnFull{
     display:none !important;
   }
