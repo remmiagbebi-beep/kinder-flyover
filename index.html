@@ -138,7 +138,7 @@ body.fake-fullscreen #btnMobileMenu{
   z-index:2;
 }
 
-/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS, PERFECT L ALIGNMENT */
+/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS, BACKWARDS L ALIGNMENT */
 @media (max-width: 767px){
 
   :root{
@@ -158,7 +158,7 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
-  /* speed icon 15% smaller ONLY on normal mobile (not iOS fullscreen) */
+  /* speed icon 15% smaller on normal mobile (non-fullscreen) */
   body:not(.ios-fullscreen) #iconSpeed{
     width:17px !important;
     height:17px !important;
@@ -230,12 +230,11 @@ body.fake-fullscreen #btnMobileMenu{
     align-items:flex-end;
   }
 
-  /* iOS FULLSCREEN TAB:
-     - just change --btn-size so all spacing maths still works
-     - fullscreen button hidden (already fullscreen)
+  /* iOS FULLSCREEN TAB
+     - bigger buttons, but speed icon kept small like normal mobile
   */
   body.ios-fullscreen{
-    --btn-size:57px; /* 15% smaller than previous fullscreen size of 67px */
+    --btn-size:57px;
   }
 
   body.ios-fullscreen .btn svg{
@@ -243,10 +242,10 @@ body.fake-fullscreen #btnMobileMenu{
     height:27px;
   }
 
-  /* ensure speed icon matches other icons in iOS fullscreen */
+  /* KEY CHANGE: fullscreen speed icon back to small size */
   body.ios-fullscreen #iconSpeed{
-    width:27px !important;
-    height:27px !important;
+    width:17px !important;
+    height:17px !important;
   }
 
   body.ios-fullscreen #iconResetView{
