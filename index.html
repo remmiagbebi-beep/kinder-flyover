@@ -58,9 +58,10 @@ html,body{
 }
 .btn svg.active{ display:block }
 
+/* base size for speed icon */
 #iconSpeed{
-  width:18px !important;
-  height:18px !important;
+  width:18px;
+  height:18px;
 }
 
 .speed-wrap{ position:relative; width:50px; height:50px }
@@ -157,6 +158,12 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
+  /* speed icon 15% smaller ONLY on normal mobile (not iOS fullscreen) */
+  body:not(.ios-fullscreen) #iconSpeed{
+    width:17px !important;
+    height:17px !important;
+  }
+
   #iconResetView{
     width:34px !important;
     height:34px !important;
@@ -235,6 +242,13 @@ body.fake-fullscreen #btnMobileMenu{
     width:27px;
     height:27px;
   }
+
+  /* ensure speed icon matches other icons in iOS fullscreen */
+  body.ios-fullscreen #iconSpeed{
+    width:27px !important;
+    height:27px !important;
+  }
+
   body.ios-fullscreen #iconResetView{
     width:45px !important;
     height:45px !important;
