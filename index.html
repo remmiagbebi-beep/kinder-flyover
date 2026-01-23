@@ -7,11 +7,8 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
 
 <style>
-#iconResetView {
-  width: 40px !important;
-  height: 40px !important;
-}
-  
+#iconResetView { width: 40px !important; height: 40px !important; }
+
 html,body{
   margin:0;
   height:100%;
@@ -46,9 +43,7 @@ html,body{
   box-shadow:0 3px 10px rgba(0,0,0,.35);
   transition:.15s;
 }
-.btn:hover{
-  background:linear-gradient(180deg,#3899EC,#297fc8);
-}
+.btn:hover{ background:linear-gradient(180deg,#3899EC,#297fc8); }
 
 .btn svg{
   fill:#fff;
@@ -58,11 +53,7 @@ html,body{
 }
 .btn svg.active{ display:block }
 
-/* base size for speed icon */
-#iconSpeed{
-  width:18px;
-  height:18px;
-}
+#iconSpeed{ width:18px; height:18px; }
 
 .speed-wrap{ position:relative; width:50px; height:50px }
 
@@ -110,7 +101,6 @@ html,body{
   cursor:pointer;
 }
 
-/* MOBILE MENU BUTTON – base style, visibility handled in JS */
 .mobile-menu-btn{
   position:absolute;
   bottom:20px;
@@ -119,15 +109,14 @@ html,body{
   display:none;
 }
 
-/* Hide all Mapbox branding */
+/* IMPORTANT: do not hide Mapbox branding or attribution */
+/* Removed:
 .mapboxgl-ctrl-logo,
 .mapboxgl-ctrl-attrib,
 .mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right{
-  display:none !important;
-}
+.mapboxgl-ctrl-bottom-right{ display:none !important; }
+*/
 
-/* Fake fullscreen hook (desktop / android) */
 body.fake-fullscreen #map{
   position:fixed;
   inset:0;
@@ -138,7 +127,6 @@ body.fake-fullscreen #btnMobileMenu{
   z-index:2;
 }
 
-/* MOBILE LAYOUT + 85% BUTTON SIZE, NO WHITE BORDERS, BACKWARDS L ALIGNMENT */
 @media (max-width: 767px){
 
   :root{
@@ -147,7 +135,6 @@ body.fake-fullscreen #btnMobileMenu{
     --menu-offset:20px;
   }
 
-  /* all buttons 85% of desktop and NO border */
   .btn{
     width:var(--btn-size);
     height:var(--btn-size);
@@ -158,7 +145,6 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
-  /* speed icon 15% smaller on normal mobile (non-fullscreen) */
   body:not(.ios-fullscreen) #iconSpeed{
     width:14px !important;
     height:14px !important;
@@ -186,7 +172,6 @@ body.fake-fullscreen #btnMobileMenu{
     height:15px;
   }
 
-  /* menu absolutely in bottom-right */
   .mobile-menu-btn{
     position:absolute;
     bottom:var(--menu-offset);
@@ -204,7 +189,6 @@ body.fake-fullscreen #btnMobileMenu{
     height:20px;
   }
 
-  /* backwards L: all gaps = var(--gap), edges aligned to menu */
   .ui-left,
   .ui-right{
     top:auto;
@@ -212,7 +196,6 @@ body.fake-fullscreen #btnMobileMenu{
     gap:var(--gap);
   }
 
-  /* bottom row to the left of menu */
   .ui-right{
     bottom:var(--menu-offset);
     right:calc(var(--menu-offset) + var(--btn-size) + var(--gap));
@@ -221,7 +204,6 @@ body.fake-fullscreen #btnMobileMenu{
     align-items:flex-end;
   }
 
-  /* vertical stack above menu */
   .ui-left{
     bottom:calc(var(--menu-offset) + var(--btn-size) + var(--gap));
     right:var(--menu-offset);
@@ -230,9 +212,6 @@ body.fake-fullscreen #btnMobileMenu{
     align-items:flex-end;
   }
 
-  /* iOS FULLSCREEN TAB
-     - bigger buttons, but speed icon kept small like normal mobile
-  */
   body.ios-fullscreen{
     --btn-size:57px;
   }
@@ -242,7 +221,6 @@ body.fake-fullscreen #btnMobileMenu{
     height:27px;
   }
 
-  /* KEY CHANGE: fullscreen speed icon back to small size */
   body.ios-fullscreen #iconSpeed{
     width:17px !important;
     height:17px !important;
@@ -274,7 +252,6 @@ body.fake-fullscreen #btnMobileMenu{
 <body>
 <div id="map"></div>
 
-<!-- LEFT SIDE: play / restart / reset / camera -->
 <div class="ui ui-left">
 
   <button id="btnToggle" class="btn">
@@ -341,7 +318,6 @@ body.fake-fullscreen #btnMobileMenu{
   </button>
 </div>
 
-<!-- RIGHT SIDE: fullscreen / zoom / layers / speed -->
 <div class="ui ui-right">
 
   <button id="btnFull" class="btn">
@@ -392,7 +368,6 @@ body.fake-fullscreen #btnMobileMenu{
   </div>
 </div>
 
-<!-- MOBILE MENU BUTTON -->
 <button id="btnMobileMenu" class="btn mobile-menu-btn">
   <svg id="iconMobileMenu" class="active" viewBox="0 0 24 24">
     <circle cx="6" cy="12" r="2"></circle>
@@ -425,7 +400,6 @@ function forceWhite(svg){
   });
 }
 
-/* FAST FORWARD ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/fast-forward.svg");
@@ -442,7 +416,6 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
-/* LAYERS ICON */
 (async()=>{
   try{
     const r=await fetch("https://raw.githubusercontent.com/remmiagbebi-beep/kinder-flyover/main/icons/layers.svg");
@@ -469,6 +442,9 @@ const map=new mapboxgl.Map({
   antialias:true,
   attributionControl:false
 });
+
+/* MINIMUM ATTRIBUTION BACK ON (single control, no duplicates) */
+map.addControl(new mapboxgl.AttributionControl({ compact: false }), "bottom-right");
 
 let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
 let userOverride=false;
@@ -672,10 +648,6 @@ document.getElementById("btnSpeed").onclick=e=>{
 };
 document.addEventListener("click",()=>speedWrap.classList.remove("open"));
 
-/* Fullscreen:
-   - iOS: open same page in new tab with ?fs=1 (fullscreen layout)
-   - others: real Fullscreen API
-*/
 const btnFull=document.getElementById("btnFull");
 
 function isFullscreen(){
@@ -691,7 +663,6 @@ function isIOS(){
   return iOS || iPadOS;
 }
 
-/* Detect iOS fullscreen tab via ?fs=1 and set class */
 (function(){
   const params = new URLSearchParams(window.location.search);
   if(isIOS() && params.get("fs") === "1"){
@@ -801,8 +772,6 @@ function tick(ts){
   requestAnimationFrame(tick);
 }
 
-/* MOBILE MENU TOGGLE – Layers + Speed in vertical stack on mobile,
-   menu stays separate in bottom-right */
 (function(){
   const btnMobileMenu = document.getElementById("btnMobileMenu");
   const uiLeft = document.querySelector(".ui-left");
@@ -821,12 +790,8 @@ function tick(ts){
     const speedWrapEl  = document.getElementById("speedWrap");
     const layersBtnEl  = document.getElementById("btnLayers");
 
-    if(layersBtnEl){
-      uiLeft.appendChild(layersBtnEl);
-    }
-    if(speedWrapEl){
-      uiLeft.appendChild(speedWrapEl);
-    }
+    if(layersBtnEl){ uiLeft.appendChild(layersBtnEl); }
+    if(speedWrapEl){ uiLeft.appendChild(speedWrapEl); }
 
     btnMobileMenu.style.display = "flex";
     setControlsVisible(false);
