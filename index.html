@@ -110,12 +110,6 @@ html,body{
 }
 
 /* IMPORTANT: do not hide Mapbox branding or attribution */
-/* Removed:
-.mapboxgl-ctrl-logo,
-.mapboxgl-ctrl-attrib,
-.mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right{ display:none !important; }
-*/
 
 body.fake-fullscreen #map{
   position:fixed;
@@ -432,6 +426,23 @@ function forceWhite(svg){
   }catch(e){}
 })();
 
+/* iOS fullscreen detection (tab) */
+function isIOS(){
+  const ua = window.navigator.userAgent || "";
+  const platform = window.navigator.platform || "";
+  const iOS = /iPad|iPhone|iPod/.test(ua);
+  const iPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return iOS || iPadOS;
+}
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(isIOS() && params.get("fs") === "1"){
+    document.body.classList.add("ios-fullscreen");
+    const bf = document.getElementById("btnFull");
+    if(bf) bf.style.display = "none";
+  }
+})();
+
 const map=new mapboxgl.Map({
   container:"map",
   style:"mapbox://styles/mapbox/satellite-streets-v12",
@@ -443,8 +454,8 @@ const map=new mapboxgl.Map({
   attributionControl:false
 });
 
-/* MINIMUM ATTRIBUTION BACK ON (single control, no duplicates) */
-map.addControl(new mapboxgl.AttributionControl({ compact: false }), "bottom-right");
+/* COMPACT ATTRIBUTION (Mapbox logo bottom left + info icon) */
+map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
 let route=null,routeLen=0,progress=0,playing=false,camMode="follow";
 let userOverride=false;
@@ -654,23 +665,6 @@ function isFullscreen(){
   return document.fullscreenElement || document.webkitFullscreenElement ||
          document.mozFullScreenElement || document.msFullscreenElement;
 }
-
-function isIOS(){
-  const ua = window.navigator.userAgent || "";
-  const platform = window.navigator.platform || "";
-  const iOS = /iPad|iPhone|iPod/.test(ua);
-  const iPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
-  return iOS || iPadOS;
-}
-
-(function(){
-  const params = new URLSearchParams(window.location.search);
-  if(isIOS() && params.get("fs") === "1"){
-    document.body.classList.add("ios-fullscreen");
-    const bf = document.getElementById("btnFull");
-    if(bf) bf.style.display = "none";
-  }
-})();
 
 btnFull.onclick=()=>{
   if(isIOS()){
